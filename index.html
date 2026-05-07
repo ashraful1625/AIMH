@@ -589,11 +589,20 @@ function showLogin(){
 }
 
 async function boot(){
-  const t=setTimeout(showLogin,3000);
+  const t=setTimeout(showLogin,5000);
   try{
-    startListeners();
-    seedIfEmpty().catch(()=>{});
-    setTimeout(()=>{ clearTimeout(t); showLogin(); },1000);
+    await seedIfEmpty();
+    await new Promise(resolve=>{
+      let loaded=0;
+      const check=()=>{loaded++; if(loaded===5) resolve();};
+      onSnapshot(col('inventory'), s=>{ INV=s.docs.map(d=>({id:d.id,...d.data()})); check(); });
+      onSnapshot(col('doctors'),   s=>{ DOCS=s.docs.map(d=>({id:d.id,...d.data()})); check(); });
+      onSnapshot(query(col('patients'),orderBy('lastVisit','desc')), s=>{ PTS=s.docs.map(d=>({id:d.id,...d.data()})); check(); });
+      onSnapshot(query(col('prescriptions'),orderBy('date','desc'),limit(100)), s=>{ RXS=s.docs.map(d=>({id:d.id,...d.data()})); check(); });
+      onSnapshot(query(col('bills'),orderBy('date','desc'),limit(100)), s=>{ BILLS=s.docs.map(d=>({id:d.id,...d.data()})); check(); });
+    });
+    clearTimeout(t);
+    showLogin();
   }catch(e){ clearTimeout(t); showLogin(); }
 }
 boot();
