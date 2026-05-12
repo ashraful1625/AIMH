@@ -1398,26 +1398,32 @@ window.calcTotal = function(){
 window.getBillData = function() {
   if(!curRx) return null;
   const meds = [];
+  let medTotal = 0;
   for(let i=0; i<(curRx.meds||[]).length; i++) {
     const m = curRx.meds[i];
     const qty = parseInt(document.getElementById('qty'+i)?.textContent)||0;
-    const price = parseFloat(document.getElementById('price'+i)?.textContent)||0;
+    const price = parseFloat(document.getElementById('up'+i)?.textContent)||0;
+    const total = parseFloat(document.getElementById('mt'+i)?.textContent)||0;
     if(qty > 0) {
-      meds.push({ name: m.name, qty, price, total: qty * price });
+      meds.push({ name: m.name, qty, price, total });
+      medTotal += total;
     }
   }
   const svcs = [];
   const svcNames = {bp:'BP Check', dm:'Diabetes Check', inj:'Injection Push', sal:'Saline Push', dr:'Dressing', oth:'Others'};
+  let svcTotal = parseInt(document.getElementById('billconsult')?.value)||0;
+  if(svcTotal > 0) svcs.push({ name: 'Consultation Fee', total: svcTotal });
+
   Object.keys(svcOn).forEach(s => {
     if(svcOn[s]) {
-      const amt = parseInt(document.getElementById('s'+s).textContent.match(/\d+/)?.[0] || 0);
+      const amt = parseInt(document.getElementById('s'+s+'p')?.value || 0);
       svcs.push({ name: svcNames[s], total: amt });
+      svcTotal += amt;
     }
   });
 
-  const medTotal = parseFloat(document.getElementById('btmed').textContent)||0;
-  const svcTotal = parseFloat(document.getElementById('btsvc').textContent)||0;
   const sc = 10;
+  svcTotal += sc;
   const discFixed = parseFloat(document.getElementById('billdisc').value)||0;
   const discPerc = parseFloat(document.getElementById('billdiscp').value)||0;
   const grandTotal = parseFloat(document.getElementById('gtamt').textContent)||0;
