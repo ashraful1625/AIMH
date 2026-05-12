@@ -275,6 +275,10 @@ input[disabled],select[disabled]{background:#f0f0f0;color:#999;cursor:not-allowe
       <button class="rtab" onclick="selRole('staff',this)"><span class="ri">🧑‍💼</span>Staff<br><span class="bn" style="font-size:9px">কর্মচারী</span></button>
       <button class="rtab" onclick="selRole('admin',this)"><span class="ri">🔐</span>Admin<br><span class="bn" style="font-size:9px">অ্যাডমিন</span></button>
     </div>
+    <div class="lf" id="lprofile-sec" style="display:none;margin-bottom:12px">
+      <label id="lprofile-lbl">Select Profile</label>
+      <select id="lprofile" style="margin-top:5px"></select>
+    </div>
     <div class="lf">
       <label>Password / পাসওয়ার্ড</label>
       <input type="password" id="lpass" placeholder="Enter password..." onkeydown="if(event.key==='Enter')doLogin()">
@@ -327,9 +331,10 @@ input[disabled],select[disabled]{background:#f0f0f0;color:#999;cursor:not-allowe
           </div>
           <div class="fg"><label>BP <span class="lbn">রক্তচাপ</span></label><input type="text" id="rxbp" placeholder="120/80"></div>
         </div>
-        <div class="row r2">
+        <div class="row r3">
           <div class="fg"><label>Weight <span class="lbn">ওজন</span></label><input type="text" id="rxwt" placeholder="55 kg"></div>
           <div class="fg"><label>Fever <span class="lbn">জ্বর</span></label><input type="text" id="rxfv" placeholder="101°F"></div>
+          <div class="fg"><label>Temp <span class="lbn">তাপমাত্রা</span></label><input type="text" id="rxtemp" placeholder="98.4°F"></div>
         </div>
         <div class="fg"><label>Complaint / Diagnosis <span class="lbn">সমস্যা</span></label><textarea id="rxcc" placeholder="Chief complaint..."></textarea></div>
       </div>
@@ -372,13 +377,42 @@ input[disabled],select[disabled]{background:#f0f0f0;color:#999;cursor:not-allowe
       </div>
     </div>
 
-    <!-- DOCTORS (Admin) -->
-    <div class="pg" id="pg-doctors">
+    <!-- MEMBERS (Admin) -->
+    <div class="pg" id="pg-members">
       <div class="card">
-        <div class="ct">👨‍⚕️ Clinic Doctors <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">ডাক্তারবৃন্দ</span></div>
-        <div class="cs">Registered doctors at A Islam Medical Hall</div>
-        <button class="btn bp bsm" onclick="openModal('mdoc')" style="margin-bottom:12px">➕ Add Doctor</button>
-        <div id="doclist"><div class="al ali">⏳ Loading...</div></div>
+        <div class="ct">👥 Member Management <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">সদস্য ব্যবস্থাপনা</span></div>
+        <div class="cs">Manage Doctors and Staff</div>
+        <div class="rtabs" style="margin-top:10px">
+          <button class="rtab on" onclick="selMemberTab('doctor',this)">Doctors</button>
+          <button class="rtab" onclick="selMemberTab('staff',this)">Staff</button>
+        </div>
+        <div id="mem-doc-sec">
+          <button class="btn bp bsm" onclick="openModal('mdoc')" style="margin-bottom:12px;margin-top:10px">➕ Add Doctor</button>
+          <div id="doclist"><div class="al ali">⏳ Loading...</div></div>
+        </div>
+        <div id="mem-staff-sec" style="display:none">
+          <button class="btn bp bsm" onclick="openModal('mstaff')" style="margin-bottom:12px;margin-top:10px">➕ Add Staff</button>
+          <div id="stafflist"><div class="al ali">⏳ Loading...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PASSWORDS (Admin) -->
+    <div class="pg" id="pg-passwords">
+      <div class="card">
+        <div class="ct">🔑 Password Management <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">পাসওয়ার্ড ব্যবস্থাপনা</span></div>
+        <div class="cs">View and update user passwords</div>
+        <div id="passlist"><div class="al ali">⏳ Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- COMPANY BILLS -->
+    <div class="pg" id="pg-company-bills">
+      <div class="card">
+        <div class="ct">🏢 Company Bills <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">কোম্পানি বিল</span></div>
+        <div class="cs">Track invoices and payments to companies</div>
+        <button class="btn bp bsm" onclick="openModal('mcomp')" style="margin-bottom:12px">➕ Add Invoice</button>
+        <div id="complist"><div class="al ali">⏳ Loading...</div></div>
       </div>
     </div>
 
@@ -420,20 +454,29 @@ input[disabled],select[disabled]{background:#f0f0f0;color:#999;cursor:not-allowe
       <div class="card" id="billsvcard" style="display:none">
         <div class="ct">🏥 Services <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">সেবাসমূহ</span></div>
         <div class="svcg">
-          <div class="svci"><div class="svcc" id="sbp" onclick="togSvc('bp')"></div><div class="svci-info"><div class="svci-lbl">🩺 BP Check</div><div class="svci-bn">রক্তচাপ</div></div><div class="svci-p"><input type="number" id="sbpp" value="30" min="0" oninput="calcTotal()"></div></div>
-          <div class="svci"><div class="svcc" id="sdm" onclick="togSvc('dm')"></div><div class="svci-info"><div class="svci-lbl">🩸 Diabetes</div><div class="svci-bn">ডায়াবেটিস</div></div><div class="svci-p"><input type="number" id="sdmp" value="50" min="0" oninput="calcTotal()"></div></div>
-          <div class="svci"><div class="svcc" id="sinj" onclick="togSvc('inj')"></div><div class="svci-info"><div class="svci-lbl">💉 Injection</div><div class="svci-bn">ইনজেকশন</div></div><div class="svci-p"><input type="number" id="sinjp" value="50" min="0" oninput="calcTotal()"></div></div>
-          <div class="svci"><div class="svcc" id="sdr" onclick="togSvc('dr')"></div><div class="svci-info"><div class="svci-lbl">🩹 Dressing</div><div class="svci-bn">ড্রেসিং</div></div><div class="svci-p"><input type="number" id="sdrp" value="100" min="0" oninput="calcTotal()"></div></div>
+          <div class="svci"><div class="svcc" id="sbp" onclick="togSvc('bp')"></div><div class="svci-info"><div class="svci-lbl">🩺 BP Check</div><div class="svci-bn">রক্তচাপ</div></div><div class="svci-p"><input type="number" id="sbpp" value="20" min="0" oninput="calcTotal()"></div></div>
+          <div class="svci"><div class="svcc" id="sdm" onclick="togSvc('dm')"></div><div class="svci-info"><div class="svci-lbl">🩸 Diabetes</div><div class="svci-bn">ডায়াবেটিস</div></div><div class="svci-p"><input type="number" id="sdmp" value="40" min="0" oninput="calcTotal()"></div></div>
+          <div class="svci"><div class="svcc" id="sinj" onclick="togSvc('inj')"></div><div class="svci-info"><div class="svci-lbl">💉 Injection</div><div class="svci-bn">ইনজেকশন</div></div><div class="svci-p"><input type="number" id="sinjp" value="20" min="0" oninput="calcTotal()"></div></div>
+          <div class="svci"><div class="svcc" id="ssal" onclick="togSvc('sal')"></div><div class="svci-info"><div class="svci-lbl">🧪 Saline</div><div class="svci-bn">স্যালাইন</div></div><div class="svci-p"><input type="number" id="ssalp" value="30" min="0" oninput="calcTotal()"></div></div>
+          <div class="svci"><div class="svcc" id="sdr" onclick="togSvc('dr')"></div><div class="svci-info"><div class="svci-lbl">🩹 Dressing</div><div class="svci-bn">ড্রেসিং</div></div><div class="svci-p"><input type="number" id="sdrp" value="0" min="0" oninput="calcTotal()"></div></div>
+          <div class="svci"><div class="svcc" id="soth" onclick="togSvc('oth')"></div><div class="svci-info"><div class="svci-lbl">📦 Others</div><div class="svci-bn">অন্যান্য</div></div><div class="svci-p"><input type="number" id="sothp" value="0" min="0" oninput="calcTotal()"></div></div>
         </div>
-        <div class="fg"><label>Consultation Fee ৳</label><input type="number" id="billconsult" value="0" oninput="calcTotal()"></div>
+        <div class="row r2">
+          <div class="fg"><label>Consultation Fee ৳</label><input type="number" id="billconsult" value="0" oninput="calcTotal()"></div>
+          <div class="fg"><label>Service Charge ৳</label><input type="number" id="billservice" value="10" readonly></div>
+        </div>
       </div>
       <div id="billmedsec"></div>
       <div id="billtotalsec" style="display:none">
         <div class="card">
-          <div class="fg" style="margin-bottom:10px"><label>Discount ৳ <span class="lbn">ছাড়</span></label><input type="number" id="billdisc" value="0" oninput="calcTotal()"></div>
+          <div class="row r2" style="margin-bottom:10px">
+            <div class="fg"><label>Discount ৳ <span class="lbn">ছাড় (Fixed)</span></label><input type="number" id="billdisc" value="0" oninput="calcTotal()"></div>
+            <div class="fg"><label>Discount % <span class="lbn">ছাড় (%)</span></label><input type="number" id="billdiscp" value="0" min="0" max="8" oninput="calcTotal()"></div>
+          </div>
           <div class="gtbar"><div><div class="gtl">Total Amount</div><div class="gtbn">মোট পরিশোধযোগ্য</div></div><div class="gta">৳ <span id="gtamt">0</span></div></div>
           <div class="brow">
-            <button class="btn bp bfull" id="savebillbtn" onclick="saveBill()">✓ Save Bill / বিল সংরক্ষণ</button>
+            <button class="btn bp bfull" id="savebillbtn" onclick="saveBill()">💾 Save & Print / বিল সংরক্ষণ ও প্রিন্ট</button>
+            <button class="btn bs" onclick="previewBill()">👁️ Preview / প্রিভিউ</button>
             <button class="btn bd" onclick="clearBill()">🗑️ Clear</button>
           </div>
         </div>
@@ -443,7 +486,10 @@ input[disabled],select[disabled]{background:#f0f0f0;color:#999;cursor:not-allowe
     <!-- REPORTS (Admin) -->
     <div class="pg" id="pg-reports">
       <div class="card">
-        <div class="ct">📊 Reports <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">রিপোর্ট</span></div>
+        <div class="ct" style="display:flex;justify-content:space-between;align-items:center">
+          <span>📊 Reports <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">রিপোর্ট</span></span>
+          <button class="btn bp bsm" onclick="printReport()">🖨️ Print Report</button>
+        </div>
         <div class="sgrid">
           <div class="sbox" style="background:var(--gl)"><div class="snum" style="color:var(--g1)" id="rrx">—</div><div class="slbl" style="color:var(--t2)">Prescriptions</div></div>
           <div class="sbox" style="background:var(--gold-l)"><div class="snum" style="color:var(--gold)" id="rrev">—</div><div class="slbl" style="color:var(--t2)">Revenue ৳</div></div>
@@ -474,6 +520,45 @@ input[disabled],select[disabled]{background:#f0f0f0;color:#999;cursor:not-allowe
     <div class="brow">
       <button class="btn bp" id="savedocbtn" onclick="saveDoc()">✓ Save Doctor</button>
       <button class="btn bs" onclick="closeModal('mdoc')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD STAFF MODAL -->
+<div class="mbg" id="mstaff">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">🧑‍💼 Add Staff</div>
+    <div class="row r2">
+      <div class="fg full"><label>Full Name</label><input type="text" id="nsname" placeholder="Name..."></div>
+      <div class="fg"><label>Role/Designation</label><input type="text" id="nsrole" placeholder="Manager, Nurse..."></div>
+      <div class="fg"><label>Phone</label><input type="tel" id="nsphone" placeholder="01XXXXXXXXX"></div>
+      <div class="fg full"><label>Staff's Login Password</label><input type="text" id="nspass" placeholder="Password for this staff"></div>
+    </div>
+    <div class="brow">
+      <button class="btn bp" id="savestaffbtn" onclick="saveStaff()">✓ Save Staff</button>
+      <button class="btn bs" onclick="closeModal('mstaff')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD COMPANY INVOICE MODAL -->
+<div class="mbg" id="mcomp">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">🏢 Company Invoice</div>
+    <div class="row r2">
+      <div class="fg full"><label>Company Name</label><input type="text" id="ncname" placeholder="Square, Incepta..."></div>
+      <div class="fg"><label>Invoice Date</label><input type="date" id="ncdate"></div>
+      <div class="fg"><label>Type</label><select id="nctype"><option value="Cash">Cash</option><option value="Credit">Credit</option></select></div>
+      <div class="fg"><label>Invoice Bill ৳</label><input type="number" id="ncbill" value="0"></div>
+      <div class="fg"><label>Adjust Bill ৳</label><input type="number" id="ncadj" value="0"></div>
+      <div class="fg"><label>Pay Now ৳</label><input type="number" id="ncpay" value="0"></div>
+      <div class="fg"><label>Sample Count</label><input type="number" id="ncsample" value="0"></div>
+    </div>
+    <div class="brow">
+      <button class="btn bp" id="savecompbtn" onclick="saveCompBill()">✓ Save Invoice</button>
+      <button class="btn bs" onclick="closeModal('mcomp')">Cancel</button>
     </div>
   </div>
 </div>
@@ -532,7 +617,7 @@ const fdel = (n, id)   => deleteDoc(dref(n,id));
 const fget = (n, id)   => getDoc(dref(n,id));
 
 // ── Local caches ───────────────────────────────────────────────
-let INV=[], PTS=[], RXS=[], BILLS=[], DOCS=[];
+let INV=[], PTS=[], RXS=[], BILLS=[], DOCS=[], STAFF=[], COMPS=[];
 
 // ── Default seeds ──────────────────────────────────────────────
 const SEED_INV=[
@@ -568,13 +653,17 @@ async function seedIfEmpty(){
     if(is.empty) for(const i of SEED_INV) await fadd('inventory',{...i,ca:new Date().toISOString()});
     const ds=await getDocs(col('doctors'));
     if(ds.empty) for(const d of SEED_DOCS) await fadd('doctors',{...d,ca:new Date().toISOString()});
+    const ss=await getDocs(col('staff'));
+    if(ss.empty) await fadd('staff',{name:'Default Staff',pass:'5678',ca:new Date().toISOString()});
   }catch(e){console.warn('Seed skip:',e.code);}
 }
 
 // ── Real-time listeners ────────────────────────────────────────
 function startListeners(){
   onSnapshot(col('inventory'), s=>{ INV=s.docs.map(d=>({id:d.id,...d.data()})); if(activePg==='inventory') renderInv(''); });
-  onSnapshot(col('doctors'),   s=>{ DOCS=s.docs.map(d=>({id:d.id,...d.data()})); renderDocList(); fillDocSel(); });
+  onSnapshot(col('doctors'),   s=>{ DOCS=s.docs.map(d=>({id:d.id,...d.data()})); if(activePg==='members') renderDocList(); fillDocSel(); if(activePg==='passwords') renderPassList(); });
+  onSnapshot(col('staff'),     s=>{ STAFF=s.docs.map(d=>({id:d.id,...d.data()})); if(activePg==='members') renderStaffList(); if(activePg==='passwords') renderPassList(); });
+  onSnapshot(col('company_bills'), s=>{ COMPS=s.docs.map(d=>({id:d.id,...d.data()})); if(activePg==='company-bills') renderCompList(); });
   onSnapshot(query(col('patients'),orderBy('lastVisit','desc')), s=>{ PTS=s.docs.map(d=>({id:d.id,...d.data()})); if(activePg==='patients') renderPts(); });
   onSnapshot(query(col('prescriptions'),orderBy('date','desc'),limit(100)), s=>{ RXS=s.docs.map(d=>({id:d.id,...d.data()})); if(activePg==='reports') renderReports(); });
   onSnapshot(query(col('bills'),orderBy('date','desc'),limit(100)), s=>{ BILLS=s.docs.map(d=>({id:d.id,...d.data()})); if(activePg==='reports') renderReports(); });
@@ -586,6 +675,7 @@ function showLogin(){
   ov.classList.add('hide');
   setTimeout(()=>ov.style.display='none',500);
   document.getElementById('login').classList.add('on');
+  selRole('doctor', document.querySelector('.rtab'));
 }
 
 async function boot(){
@@ -594,9 +684,11 @@ async function boot(){
     await seedIfEmpty();
     await new Promise(resolve=>{
       let loaded=0;
-      const check=()=>{loaded++; if(loaded===5) resolve();};
+      const check=()=>{loaded++; if(loaded===7) resolve();};
       onSnapshot(col('inventory'), s=>{ INV=s.docs.map(d=>({id:d.id,...d.data()})); check(); });
       onSnapshot(col('doctors'),   s=>{ DOCS=s.docs.map(d=>({id:d.id,...d.data()})); check(); });
+      onSnapshot(col('staff'),     s=>{ STAFF=s.docs.map(d=>({id:d.id,...d.data()})); check(); });
+      onSnapshot(col('company_bills'), s=>{ COMPS=s.docs.map(d=>({id:d.id,...d.data()})); check(); });
       onSnapshot(query(col('patients'),orderBy('lastVisit','desc')), s=>{ PTS=s.docs.map(d=>({id:d.id,...d.data()})); check(); });
       onSnapshot(query(col('prescriptions'),orderBy('date','desc'),limit(100)), s=>{ RXS=s.docs.map(d=>({id:d.id,...d.data()})); check(); });
       onSnapshot(query(col('bills'),orderBy('date','desc'),limit(100)), s=>{ BILLS=s.docs.map(d=>({id:d.id,...d.data()})); check(); });
@@ -617,22 +709,41 @@ window.selRole = function(r,btn){
   btn.classList.add('on');
   document.getElementById('lpass').value='';
   document.getElementById('lerr').style.display='none';
+
+  const psec = document.getElementById('lprofile-sec');
+  const psel = document.getElementById('lprofile');
+  const plbl = document.getElementById('lprofile-lbl');
+
+  if(r === 'admin') {
+    psec.style.display = 'none';
+  } else {
+    psec.style.display = 'block';
+    plbl.textContent = r === 'doctor' ? 'Select Doctor' : 'Select Staff';
+    const list = r === 'doctor' ? DOCS : STAFF;
+    psel.innerHTML = list.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+    if(!list.length) psel.innerHTML = `<option value="">No ${r} found</option>`;
+  }
 };
 window._selRole='doctor';
 
 window.doLogin = function(){
   const pass=document.getElementById('lpass').value.trim();
   const sr=window._selRole;
+  const profileId=document.getElementById('lprofile').value;
   const err=document.getElementById('lerr');
-  // Doctor: check against doctors collection passwords
-  if(sr==='doctor'){
-    const matched=DOCS.find(d=>d.pass&&d.pass===pass);
-    if(matched){ role='doctor'; myDocId=matched.id; err.style.display='none'; launchApp(); return; }
-    // fallback: allow old default doctor password too
-    if(pass==='1234'){ role='doctor'; myDocId=DOCS.find(d=>d.isFounder)?.id||''; err.style.display='none'; launchApp(); return; }
-    err.style.display='flex'; document.getElementById('lpass').value=''; return;
+
+  if(sr === 'admin') {
+    if(pass === SYS_PASS.admin) { role='admin'; myDocId=''; err.style.display='none'; launchApp(); return; }
+  } else if(sr === 'doctor') {
+    const d = DOCS.find(x => x.id === profileId);
+    if(d && d.pass === pass) { role='doctor'; myDocId=d.id; err.style.display='none'; launchApp(); return; }
+    if(pass === '1234' && d && d.isFounder) { role='doctor'; myDocId=d.id; err.style.display='none'; launchApp(); return; }
+  } else if(sr === 'staff') {
+    const s = STAFF.find(x => x.id === profileId);
+    if(s && s.pass === pass) { role='staff'; myDocId=s.id; err.style.display='none'; launchApp(); return; }
+    if(pass === SYS_PASS.staff) { role='staff'; myDocId=profileId; err.style.display='none'; launchApp(); return; }
   }
-  if(pass===SYS_PASS[sr]){ role=sr; myDocId=''; err.style.display='none'; launchApp(); return; }
+
   err.style.display='flex'; document.getElementById('lpass').value='';
 };
 
@@ -647,9 +758,26 @@ window.doLogout = function(){
 
 // ── NAV CONFIG ─────────────────────────────────────────────────
 const NAV_CFG={
-  doctor:[{id:'prescription',icon:'📋',label:'Rx'}],
-  staff: [{id:'billing',icon:'💰',label:'Billing'},{id:'patients',icon:'👤',label:'Patients'},{id:'inventory',icon:'💊',label:'Stock'}],
-  admin: [{id:'prescription',icon:'📋',label:'Rx'},{id:'billing',icon:'💰',label:'Billing'},{id:'patients',icon:'👤',label:'Patients'},{id:'inventory',icon:'💊',label:'Stock'},{id:'doctors',icon:'👨‍⚕️',label:'Doctors'},{id:'reports',icon:'📊',label:'Reports'}]
+  doctor:[
+    {id:'prescription',icon:'📋',label:'Rx'},
+    {id:'inventory',icon:'💊',label:'Stock'}
+  ],
+  staff: [
+    {id:'billing',icon:'💰',label:'Billing'},
+    {id:'patients',icon:'👤',label:'Patients'},
+    {id:'inventory',icon:'💊',label:'Stock'},
+    {id:'company-bills',icon:'🏢',label:'Co Bills'}
+  ],
+  admin: [
+    {id:'prescription',icon:'📋',label:'Rx'},
+    {id:'billing',icon:'💰',label:'Billing'},
+    {id:'patients',icon:'👤',label:'Patients'},
+    {id:'inventory',icon:'💊',label:'Stock'},
+    {id:'members',icon:'👥',label:'Members'},
+    {id:'passwords',icon:'🔑',label:'Passwords'},
+    {id:'reports',icon:'📊',label:'Reports'},
+    {id:'company-bills',icon:'🏢',label:'Co Bills'}
+  ]
 };
 const ROLE_ICONS={doctor:'👨‍⚕️',staff:'🧑‍💼',admin:'🔐'};
 const ROLE_NAMES={doctor:'Doctor',staff:'Staff',admin:'Admin'};
@@ -678,7 +806,9 @@ window.goPage = function(id, btn){
   if(id==='prescription'){ if(medRows.length===0) addMedRow(); genRxId(); fillDocSel(); }
   if(id==='patients') renderPts();
   if(id==='inventory'){ renderInv(''); const a=document.getElementById('addinvbtn');if(a)a.style.display=role==='admin'?'inline-flex':'none'; }
-  if(id==='doctors') renderDocList();
+  if(id==='members') { renderDocList(); renderStaffList(); }
+  if(id==='passwords') renderPassList();
+  if(id==='company-bills') renderCompList();
   if(id==='reports') renderReports();
 };
 
@@ -688,7 +818,14 @@ function startClock(){
 }
 function sync(m){const e=document.getElementById('hsync');if(e){e.textContent=m;setTimeout(()=>e.textContent='🟢',2500);}}
 
-// ── DOCTORS ────────────────────────────────────────────────────
+// ── MEMBERS ────────────────────────────────────────────────────
+window.selMemberTab = function(t, btn) {
+  document.querySelectorAll('#pg-members .rtab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('mem-doc-sec').style.display = t === 'doctor' ? 'block' : 'none';
+  document.getElementById('mem-staff-sec').style.display = t === 'staff' ? 'block' : 'none';
+};
+
 function renderDocList(){
   const el=document.getElementById('doclist');
   if(!el) return;
@@ -752,11 +889,127 @@ window.delDoc = async function(id){
   try{ await fdel('doctors',id); }catch(e){alert('Failed: '+e.message);}
 };
 
+window.renderStaffList = function(){
+  const el=document.getElementById('stafflist');
+  if(!el) return;
+  if(!STAFF.length){el.innerHTML='<div class="al ali">No staff yet.</div>';return;}
+  el.innerHTML=STAFF.map(s=>`<div class="dc2">
+    <div class="dav">${(s.name||'?').charAt(0).toUpperCase()}</div>
+    <div class="dinfo">
+      <div class="dname">${s.name}</div>
+      <div class="ddeg">${s.role||'Staff'}</div>
+      <div class="dph">📞 ${s.phone||'—'}</div>
+    </div>
+    ${role==='admin'?`<button class="btn bd bsm" onclick="delStaff('${s.id}')">🗑️</button>`:''}
+  </div>`).join('');
+};
+
+window.saveStaff = async function(){
+  const name=document.getElementById('nsname').value.trim();
+  if(!name){alert('Enter staff name!');return;}
+  const btn=document.getElementById('savestaffbtn');
+  btn.innerHTML='<span class="sp"></span>Saving...';btn.disabled=true;
+  try{
+    await fadd('staff',{
+      name,
+      role:document.getElementById('nsrole').value.trim(),
+      phone:document.getElementById('nsphone').value.trim(),
+      pass:document.getElementById('nspass').value.trim(),
+      ca:new Date().toISOString()
+    });
+    closeModal('mstaff');
+    ['nsname','nsrole','nsphone','nspass'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+    sync('✅ Staff added!');
+  }catch(e){ alert('❌ Failed: '+e.message); }
+  finally{ btn.innerHTML='✓ Save Staff'; btn.disabled=false; }
+};
+
+window.delStaff = async function(id){
+  if(!confirm('Delete this staff?')) return;
+  try{ await fdel('staff',id); }catch(e){alert('Failed: '+e.message);}
+};
+
+window.renderCompList = function(){
+  const el=document.getElementById('complist');
+  if(!el) return;
+  if(!COMPS.length){el.innerHTML='<div class="al ali">No invoices yet.</div>';return;}
+  el.innerHTML=`<div class="mtw"><table class="mt">
+    <thead><tr><th>Company</th><th>Date</th><th>Type</th><th>Bill</th><th>Pay</th><th>Due</th><th></th></tr></thead>
+    <tbody>${COMPS.map(c=>{
+      const overall = (c.bill||0) - (c.adj||0);
+      const due = overall - (c.pay||0);
+      return `<tr>
+        <td style="text-align:left;font-weight:600">${c.name}</td>
+        <td>${c.date}</td>
+        <td><span class="badge ${c.type==='Cash'?'bok':'blow'}">${c.type}</span></td>
+        <td>৳${c.bill||0}</td>
+        <td>৳${c.pay||0}</td>
+        <td style="color:${due>0?'var(--red)':'var(--g2)'};font-weight:700">৳${due}</td>
+        <td><button class="rmb" onclick="delCompBill('${c.id}')">✕</button></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+};
+
+window.saveCompBill = async function(){
+  const name=document.getElementById('ncname').value.trim();
+  if(!name){alert('Enter company name!');return;}
+  const btn=document.getElementById('savecompbtn');
+  btn.innerHTML='<span class="sp"></span>Saving...';btn.disabled=true;
+  try{
+    await fadd('company_bills',{
+      name,
+      date:document.getElementById('ncdate').value,
+      type:document.getElementById('nctype').value,
+      bill:parseFloat(document.getElementById('ncbill').value)||0,
+      adj:parseFloat(document.getElementById('ncadj').value)||0,
+      pay:parseFloat(document.getElementById('ncpay').value)||0,
+      sample:parseInt(document.getElementById('ncsample').value)||0,
+      ca:new Date().toISOString()
+    });
+    closeModal('mcomp');
+    ['ncname','ncdate','ncbill','ncadj','ncpay','ncsample'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+    sync('✅ Invoice saved!');
+  }catch(e){ alert('❌ Failed: '+e.message); }
+  finally{ btn.innerHTML='✓ Save Invoice'; btn.disabled=false; }
+};
+
+window.delCompBill = async function(id){
+  if(!confirm('Delete this invoice?')) return;
+  try{ await fdel('company_bills',id); }catch(e){alert('Failed: '+e.message);}
+};
+
+window.renderPassList = function(){
+  const el=document.getElementById('passlist');
+  if(!el) return;
+  const all = [...DOCS.map(d=>({...d,type:'Doctor',col:'doctors'})), ...STAFF.map(s=>({...s,type:'Staff',col:'staff'}))];
+  if(!all.length){el.innerHTML='<div class="al ali">No users found.</div>';return;}
+  el.innerHTML=all.map(u=>`<div class="dc2">
+    <div class="dav">${u.name.charAt(0)}</div>
+    <div class="dinfo">
+      <div class="dname">${u.name} <span class="badge bok">${u.type}</span></div>
+      <div class="row r2" style="margin-top:8px">
+        <div class="fg"><input type="text" id="pass-${u.id}" value="${u.pass||''}" style="padding:6px 10px;font-size:12px"></div>
+        <div class="fg"><button class="btn bp bsm" onclick="updPass('${u.col}','${u.id}')">💾 Update</button></div>
+      </div>
+    </div>
+  </div>`).join('');
+};
+
+window.updPass = async function(collection, id){
+  const newPass = document.getElementById('pass-'+id).value.trim();
+  if(!newPass){alert('Password cannot be empty!');return;}
+  try{
+    await fupd(collection, id, {pass:newPass});
+    sync('✅ Password updated!');
+  }catch(e){alert('Failed: '+e.message);}
+};
+
 // ── PRESCRIPTION ───────────────────────────────────────────────
 let medRows=[], curRxId='';
 
 function genRxId(){
-  let n='';for(let i=0;i<7;i++)n+=Math.floor(Math.random()*10);
+  let n='';for(let i=0;i<8;i++)n+=Math.floor(Math.random()*10);
   curRxId='P'+n;
   const el=document.getElementById('rxid');
   if(el) el.textContent='· '+curRxId;
@@ -843,7 +1096,7 @@ function getRxData(){
     patient:document.getElementById('rxname').value.trim(),
     phone:document.getElementById('rxphone').value.trim(),
     age:getAge(), gender:document.getElementById('rxgender').value,
-    bp:document.getElementById('rxbp').value, weight:document.getElementById('rxwt').value, fever:document.getElementById('rxfv').value,
+    bp:document.getElementById('rxbp').value, weight:document.getElementById('rxwt').value, fever:document.getElementById('rxfv').value, temp:document.getElementById('rxtemp').value,
     complaint:document.getElementById('rxcc').value, advice:document.getElementById('rxadv').value,
     nextVisit:document.getElementById('rxnv').value, fee:parseInt(document.getElementById('rxfee').value)||0,
     doctorId:docId,
@@ -863,11 +1116,11 @@ window.saveRx = async function(){
   btn.innerHTML='<span class="sp"></span>Saving...';btn.disabled=true;
   try{
     await fset('prescriptions',rx.rxId,{...rx,savedAt:new Date().toISOString()});
-    const ex=PTS.find(p=>p.name.toLowerCase()===rx.patient.toLowerCase());
+    const ex=PTS.find(p=>p.phone===rx.phone && rx.phone !== '+8801');
     if(!ex){
-      await fset('patients',rx.rxId,{name:rx.patient,phone:rx.phone,age:rx.age,gender:rx.gender,visits:1,lastVisit:rx.date,rxIds:[rx.rxId],ca:new Date().toISOString()});
+      await fadd('patients',{name:rx.patient,phone:rx.phone,age:rx.age,gender:rx.gender,visits:1,lastVisit:rx.date,rxIds:[rx.rxId],ca:new Date().toISOString()});
     }else{
-      await fupd('patients',ex.id,{visits:(ex.visits||0)+1,lastVisit:rx.date,rxIds:[...(ex.rxIds||[]),rx.rxId]});
+      await fupd('patients',ex.id,{visits:(ex.visits||0)+1,lastVisit:rx.date,rxIds:[...(ex.rxIds||[]),rx.rxId],name:rx.patient,age:rx.age});
     }
     sync('✅ Saved!');
     buildPrintRx(rx,false);
@@ -886,19 +1139,22 @@ function buildPrintRx(rx,preview){
   const rows=rx.meds.map((m,i)=>`<tr><td style="text-align:center;color:#999;font-size:10px">${i+1}</td><td style="font-weight:600;padding:6px 8px">${m.name}</td>${dc(m.morning)}${dc(m.noon)}${dc(m.evening)}${dc(m.night)}<td style="text-align:center;font-size:10px">${m.food==='before'?'Before':'After'}</td><td style="text-align:center;font-weight:600">${m.days||'—'}</td></tr>`).join('');
   let nv='';
   if(rx.nextVisit){const d=new Date(rx.date);d.setDate(d.getDate()+parseInt(rx.nextVisit));nv=`After ${rx.nextVisit} days (${d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})})`;}
-  const html=`<div class="rxp">
-    <div class="rxph">
+  const html=`<div class="rxp" style="max-width:800px;margin:auto;border:1px solid #eee;padding:40px;position:relative;background:#fff">
+    <div class="rxph" style="display:flex;justify-content:space-between;border-bottom:2px solid #1a5c3a;padding-bottom:15px;margin-bottom:20px">
       <div>
-        <div class="rxdn">${rx.doctorName}</div>
-        <div class="rxdd">${rx.doctorDeg}</div>
-        <div class="rxdd">${rx.doctorSpec}</div>
-        <div class="rxdd" style="margin-top:4px">📍 A Islam Medical Hall, Kasba Puratan Bazar, Kasba, Brahmanbaria</div>
-        <div class="rxdd">📞 ${rx.doctorPhone} &nbsp;|&nbsp; Clinic: 01884794060</div>
+        <div class="rxdn" style="font-size:22px;font-weight:800;color:#1a5c3a;font-family:'Lora',serif">${rx.doctorName}</div>
+        <div class="rxdd" style="font-size:13px;font-weight:600;color:#333;margin-top:2px">${rx.doctorDeg}</div>
+        <div class="rxdd" style="font-size:12px;color:#666">${rx.doctorSpec}</div>
+        <div class="rxdd" style="margin-top:8px;font-size:11px;color:#1a5c3a;font-weight:600">
+          📍 A Islam Medical Hall, Kasba Puratan Bazar, Kasba, Brahmanbaria
+        </div>
+        <div class="rxdd" style="font-size:11px;color:#444">📞 ${rx.doctorPhone} &nbsp;|&nbsp; Clinic: 01884794060</div>
       </div>
       <div style="text-align:right">
-        <div style="font-family:'Noto Serif Bengali',serif;font-size:14px;font-weight:700;color:#1a5c3a">এ ইসলাম মেডিকেল হল</div>
-        <div style="font-size:11px;color:#7a9b8a;margin-top:3px">${rx.dateStr}</div>
-        <div style="font-size:14px;font-weight:700;color:#22774d;margin-top:5px;letter-spacing:1px">ID: ${rx.rxId}</div>
+        <div style="font-family:'Noto Serif Bengali',serif;font-size:20px;font-weight:700;color:#1a5c3a">এ ইসলাম মেডিকেল হল</div>
+        <div style="font-size:11px;color:#22774d;font-weight:700;letter-spacing:0.5px;margin-top:2px">A ISLAM MEDICAL HALL</div>
+        <div style="font-size:11px;color:#7a9b8a;margin-top:5px">${rx.dateStr}</div>
+        <div style="font-size:15px;font-weight:800;color:#d32f2f;margin-top:5px;letter-spacing:1px">ID: ${rx.rxId}</div>
       </div>
     </div>
     <div class="rxpb">
@@ -909,6 +1165,7 @@ function buildPrintRx(rx,preview){
       ${rx.bp?`<span><b>BP:</b> ${rx.bp}</span>`:''}
       ${rx.weight?`<span><b>Wt:</b> ${rx.weight}</span>`:''}
       ${rx.fever?`<span><b>Fever:</b> ${rx.fever}</span>`:''}
+      ${rx.temp?`<span><b>Temp:</b> ${rx.temp}</span>`:''}
     </div>
     ${rx.complaint?`<div style="margin-bottom:10px;font-size:12px"><b style="color:#1a5c3a">Complaint:</b> ${rx.complaint}</div>`:''}
     <div style="font-size:38px;font-family:'Lora',serif;color:#1a5c3a;opacity:0.12;line-height:1;margin-bottom:-5px">℞</div>
@@ -937,7 +1194,7 @@ function buildPrintRx(rx,preview){
 }
 
 window.clearRx = function(){
-  ['rxname','rxbp','rxwt','rxfv','rxcc','rxadv'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['rxname','rxbp','rxwt','rxfv','rxtemp','rxcc','rxadv'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   document.getElementById('rxphone').value='+8801';
   document.getElementById('rxagenum').value='';
   document.getElementById('rxageunit').value='years';
@@ -960,11 +1217,28 @@ window.renderPts = function(){
   const el=document.getElementById('ptlist');
   if(!el) return;
   if(!f.length){el.innerHTML='<div class="al ali">ℹ️ No patients found.</div>';return;}
-  el.innerHTML=f.map(p=>`<div class="pi">
-    <div class="pav">${(p.name||'?').charAt(0).toUpperCase()}</div>
-    <div class="pinfo"><div class="pname">${p.name||'—'}</div><div class="pmeta">${p.gender||'—'}·Age ${p.age||'—'}·${p.phone||'—'}</div><div class="pmeta">Visits:${p.visits||1}·Last:${p.lastVisit||'—'}</div></div>
-    <div class="pbadge">${p.id||'—'}</div>
-  </div>`).join('');
+  el.innerHTML=f.map(p=>{
+    const lastRxId = p.rxIds && p.rxIds.length ? p.rxIds[p.rxIds.length-1] : '';
+    return `<div class="pi" onclick="goToBilling('${lastRxId}')" style="cursor:pointer">
+      <div class="pav">${(p.name||'?').charAt(0).toUpperCase()}</div>
+      <div class="pinfo"><div class="pname">${p.name||'—'}</div><div class="pmeta">${p.gender||'—'}·Age ${p.age||'—'}·${p.phone||'—'}</div><div class="pmeta">Visits:${p.visits||1}·Last:${p.lastVisit||'—'}</div></div>
+      <div class="pbadge">${lastRxId}</div>
+    </div>`;
+  }).join('');
+};
+
+window.goToBilling = function(rxId){
+  if(!rxId) return;
+  const nav = document.getElementById('nav');
+  const billBtn = Array.from(nav.querySelectorAll('.nb')).find(b => b.textContent.includes('Billing'));
+  if(billBtn) {
+    goPage('billing', billBtn);
+    const uidInput = document.getElementById('billuid');
+    if(uidInput) {
+      uidInput.value = rxId;
+      loadRx();
+    }
+  }
 };
 
 // ── INVENTORY ──────────────────────────────────────────────────
@@ -1023,7 +1297,7 @@ window.saveMed = async function(){
 };
 
 // ── BILLING ────────────────────────────────────────────────────
-let curRx=null, svcOn={bp:false,dm:false,inj:false,dr:false};
+let curRx=null, svcOn={bp:false,dm:false,inj:false,sal:false,dr:false,oth:false};
 
 window.togSvc = function(s){
   svcOn[s]=!svcOn[s];
@@ -1105,30 +1379,200 @@ window.updPrice = function(idx,p){
 
 window.calcTotal = function(){
   if(!curRx) return;
-  let t=parseInt(document.getElementById('billconsult')?.value)||0;
-  (curRx.meds||[]).forEach((_,i)=>{const e=document.getElementById('mt'+i);if(e)t+=parseFloat(e.textContent)||0;});
-  ['bp','dm','inj','dr'].forEach(s=>{if(svcOn[s]){const e=document.getElementById('s'+s+'p');if(e)t+=parseInt(e.value)||0;}});
-  t-=parseInt(document.getElementById('billdisc')?.value)||0;
-  const el=document.getElementById('gtamt');if(el)el.textContent=Math.max(0,t).toFixed(0);
+  let medTotal = 0;
+  (curRx.meds||[]).forEach((_,i)=>{const e=document.getElementById('mt'+i);if(e)medTotal+=parseFloat(e.textContent)||0;});
+
+  let svcTotal = parseInt(document.getElementById('billconsult')?.value)||0;
+  svcTotal += parseInt(document.getElementById('billservice')?.value)||0;
+  ['bp','dm','inj','sal','dr','oth'].forEach(s=>{if(svcOn[s]){const e=document.getElementById('s'+s+'p');if(e)svcTotal+=parseInt(e.value)||0;}});
+
+  const discFixed = parseInt(document.getElementById('billdisc')?.value)||0;
+  const discPerc = Math.min(8, parseInt(document.getElementById('billdiscp')?.value)||0);
+
+  const discount = discFixed + (medTotal * (discPerc / 100));
+
+  const total = medTotal + svcTotal - discount;
+  const el=document.getElementById('gtamt');if(el)el.textContent=Math.max(0,total).toFixed(0);
+};
+
+window.getBillData = function() {
+  if(!curRx) return null;
+  const meds = [];
+  for(let i=0; i<(curRx.meds||[]).length; i++) {
+    const m = curRx.meds[i];
+    const qty = parseInt(document.getElementById('qty'+i)?.textContent)||0;
+    const price = parseFloat(document.getElementById('price'+i)?.textContent)||0;
+    if(qty > 0) {
+      meds.push({ name: m.name, qty, price, total: qty * price });
+    }
+  }
+  const svcs = [];
+  const svcNames = {bp:'BP Check', dm:'Diabetes Check', inj:'Injection Push', sal:'Saline Push', dr:'Dressing', oth:'Others'};
+  Object.keys(svcOn).forEach(s => {
+    if(svcOn[s]) {
+      const amt = parseInt(document.getElementById('s'+s).textContent.match(/\d+/)?.[0] || 0);
+      svcs.push({ name: svcNames[s], total: amt });
+    }
+  });
+
+  const medTotal = parseFloat(document.getElementById('btmed').textContent)||0;
+  const svcTotal = parseFloat(document.getElementById('btsvc').textContent)||0;
+  const sc = 10;
+  const discFixed = parseFloat(document.getElementById('billdisc').value)||0;
+  const discPerc = parseFloat(document.getElementById('billdiscp').value)||0;
+  const grandTotal = parseFloat(document.getElementById('gtamt').textContent)||0;
+
+  return {
+    rxId: curRx.rxId,
+    patient: curRx.patient,
+    age: curRx.age,
+    gender: curRx.gender,
+    date: new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),
+    meds,
+    svcs,
+    medTotal,
+    svcTotal,
+    sc,
+    discFixed,
+    discPerc,
+    grandTotal
+  };
+};
+
+window.buildPrintBill = function(bill, preview) {
+  const medRows = bill.meds.map((m,i) => `
+    <tr>
+      <td style="text-align:center;font-size:10px;color:#999">${i+1}</td>
+      <td style="padding:6px 8px">${m.name}</td>
+      <td style="text-align:center">${m.qty}</td>
+      <td style="text-align:right">${m.price}</td>
+      <td style="text-align:right;font-weight:600">${m.total}</td>
+    </tr>
+  `).join('');
+
+  const svcRows = bill.svcs.map(s => `
+    <tr>
+      <td colspan="4" style="padding:4px 8px;font-size:12px">${s.name}</td>
+      <td style="text-align:right;padding:4px 8px;font-size:12px">৳${s.total}</td>
+    </tr>
+  `).join('');
+
+  const html = `
+    <div class="rxp" style="max-width:500px;margin:auto;border:1px solid #eee;padding:30px">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-family:'Noto Serif Bengali',serif;font-size:22px;font-weight:700;color:#1a5c3a">এ ইসলাম মেডিকেল হল</div>
+        <div style="font-size:14px;font-weight:700;color:#22774d;letter-spacing:1px;margin-top:4px">A ISLAM MEDICAL HALL</div>
+        <div style="font-size:11px;color:#666;margin-top:4px">Kasba Puratan Bazar, Kasba, Brahmanbaria</div>
+        <div style="font-size:11px;color:#666">📞 01884794060, 01830079952</div>
+        <div style="margin:15px auto;width:80px;height:2px;background:#1a5c3a"></div>
+        <div style="font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#1a5c3a">INVOICE</div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;margin-bottom:20px;font-size:12px;border-bottom:1px solid #f0f0f0;padding-bottom:10px">
+        <div>
+          <div><b>Patient:</b> ${bill.patient}</div>
+          <div><b>Age/Sex:</b> ${bill.age} / ${bill.gender}</div>
+        </div>
+        <div style="text-align:right">
+          <div><b>Date:</b> ${bill.date}</div>
+          <div><b>Rx ID:</b> ${bill.rxId}</div>
+        </div>
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;margin-bottom:15px">
+        <thead>
+          <tr style="background:#f2faf6;font-size:11px;color:#1a5c3a">
+            <th style="padding:8px;width:24px">#</th>
+            <th style="padding:8px;text-align:left">Medicine</th>
+            <th style="padding:8px">Qty</th>
+            <th style="padding:8px;text-align:right">Price</th>
+            <th style="padding:8px;text-align:right">Total</th>
+          </tr>
+        </thead>
+        <tbody style="font-size:12px">
+          ${medRows}
+        </tbody>
+      </table>
+
+      <table style="width:100%;border-collapse:collapse;margin-top:10px">
+        <tbody style="font-size:12px">
+          ${svcRows}
+          <tr>
+            <td colspan="4" style="padding:4px 8px;border-top:1px solid #f0f0f0">Service Charge</td>
+            <td style="text-align:right;padding:4px 8px;border-top:1px solid #f0f0f0">৳${bill.sc}</td>
+          </tr>
+          ${bill.discFixed || bill.discPerc ? `
+          <tr>
+            <td colspan="4" style="padding:4px 8px;color:#d32f2f">Discount ${bill.discPerc ? '('+bill.discPerc+'%)' : ''}</td>
+            <td style="text-align:right;padding:4px 8px;color:#d32f2f">-৳${(bill.medTotal * bill.discPerc / 100 + bill.discFixed).toFixed(0)}</td>
+          </tr>` : ''}
+          <tr style="font-size:16px;font-weight:700;color:#1a5c3a">
+            <td colspan="4" style="padding:10px 8px;border-top:2px solid #1a5c3a">GRAND TOTAL</td>
+            <td style="text-align:right;padding:10px 8px;border-top:2px solid #1a5c3a">৳${bill.grandTotal}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:40px;display:flex;justify-content:space-between;align-items:flex-end">
+        <div style="font-size:10px;color:#999">Printed on ${new Date().toLocaleString()}</div>
+        <div style="text-align:center">
+          <div style="width:120px;border-top:1px solid #ccc;margin-bottom:5px"></div>
+          <div style="font-size:11px;font-weight:700;color:#1a5c3a">Authorized Signature</div>
+        </div>
+      </div>
+
+      <div style="margin-top:30px;text-align:center;font-size:11px;color:#7a9b8a;border-top:1px dashed #eee;padding-top:10px">
+        Thank you for choosing A Islam Medical Hall
+      </div>
+    </div>
+  `;
+
+  const pa=document.getElementById('pa');
+  pa.innerHTML=html; pa.style.display='block';
+  if(!preview){ window.print(); pa.style.display='none'; pa.innerHTML=''; }
+  else {
+    pa.style.cssText='display:block;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:#fff;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch';
+    const ctrl=document.createElement('div');
+    ctrl.id='pc';
+    ctrl.style.cssText='display:flex;gap:8px;margin-bottom:12px;position:sticky;top:0;background:#fff;padding:8px 0;z-index:100;border-bottom:1px solid #eee';
+    ctrl.innerHTML=`<button class="btn bd bsm" onclick="document.getElementById('pa').style.display='none';document.getElementById('pa').innerHTML=''">✕ Close</button>
+      <button class="btn bp bsm" onclick="window.print()">🖨️ Print</button>`;
+    pa.prepend(ctrl);
+  }
+};
+
+window.previewBill = function() {
+  const bill = getBillData();
+  if(!bill) { alert('Load a prescription first!'); return; }
+  buildPrintBill(bill, true);
 };
 
 window.saveBill = async function(){
   if(!curRx){alert('Load a prescription first!');return;}
-  const total=parseFloat(document.getElementById('gtamt')?.textContent)||0;
+  const bill = getBillData();
   const btn=document.getElementById('savebillbtn');
   btn.innerHTML='<span class="sp"></span>Saving...';btn.disabled=true;
   try{
-    await fadd('bills',{rxId:curRx.rxId||curRx.id,patient:curRx.patient,doctorName:curRx.doctorName||'',date:new Date().toISOString().split('T')[0],dateStr:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),total,services:Object.keys(svcOn).filter(s=>svcOn[s]),savedAt:new Date().toISOString()});
+    // Deduct stock
+    for(let i=0; i<(curRx.meds||[]).length; i++) {
+      const m = curRx.meds[i];
+      const qty = parseInt(document.getElementById('qty'+i)?.textContent)||0;
+      const invMed = INV.find(x => x.name.toLowerCase() === m.name.toLowerCase());
+      if(invMed && qty > 0) {
+        await fupd('inventory', invMed.id, { stock: Math.max(0, invMed.stock - qty) });
+      }
+    }
+    await fadd('bills',{rxId:bill.rxId,patient:bill.patient,doctorName:curRx.doctorName||'',date:new Date().toISOString().split('T')[0],dateStr:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),total:bill.grandTotal,services:bill.svcs.map(s=>s.name),savedAt:new Date().toISOString()});
     sync('✅ Bill Saved!');
-    alert('✅ Bill saved! Total: ৳'+total.toFixed(0));
+    buildPrintBill(bill, false);
     clearBill();
   }catch(e){console.error(e);alert('❌ Failed: '+e.message);}
-  finally{btn.innerHTML='✓ Save Bill';btn.disabled=false;}
+  finally{btn.innerHTML='💾 Save & Print / বিল সংরক্ষণ ও প্রিন্ট';btn.disabled=false;}
 };
 
 window.clearBill = function(){
-  curRx=null;svcOn={bp:false,dm:false,inj:false,dr:false};
-  ['sbp','sdm','sinj','sdr'].forEach(id=>{const e=document.getElementById(id);if(e){e.classList.remove('on');e.textContent='';}});
+  curRx=null;svcOn={bp:false,dm:false,inj:false,sal:false,dr:false,oth:false};
+  ['sbp','sdm','sinj','ssal','sdr','soth'].forEach(id=>{const e=document.getElementById(id);if(e){e.classList.remove('on');e.textContent='';}});
   document.getElementById('billuid').value='';
   document.getElementById('billrx').innerHTML='';
   document.getElementById('billsvcard').style.display='none';
@@ -1136,24 +1580,128 @@ window.clearBill = function(){
   document.getElementById('billtotalsec').style.display='none';
   document.getElementById('gtamt').textContent='0';
   const d=document.getElementById('billdisc');if(d)d.value='0';
+  const dp=document.getElementById('billdiscp');if(dp)dp.value='0';
 };
 
 // ── REPORTS ────────────────────────────────────────────────────
 function renderReports(){
-  const rev=BILLS.reduce((s,b)=>s+(b.total||0),0);
   const g=id=>document.getElementById(id);
+  const today = new Date().toISOString().split('T')[0];
+  const last7Days = new Date(); last7Days.setDate(last7Days.getDate() - 7);
+  const last30Days = new Date(); last30Days.setDate(last30Days.getDate() - 30);
+
+  const filterByDate = (list, dateLimit) => list.filter(item => new Date(item.date) >= dateLimit);
+
+  const dailyBills = BILLS.filter(b => b.date === today);
+  const weeklyBills = filterByDate(BILLS, last7Days);
+  const monthlyBills = filterByDate(BILLS, last30Days);
+
+  const revDaily = dailyBills.reduce((s,b)=>s+(b.total||0),0);
+  const revWeekly = weeklyBills.reduce((s,b)=>s+(b.total||0),0);
+  const revMonthly = monthlyBills.reduce((s,b)=>s+(b.total||0),0);
+
   if(g('rrx'))g('rrx').textContent=RXS.length;
-  if(g('rrev'))g('rrev').textContent='৳'+rev.toFixed(0);
+  if(g('rrev'))g('rrev').textContent='৳'+revMonthly.toFixed(0);
   if(g('rpts'))g('rpts').textContent=PTS.length;
   if(g('rinv'))g('rinv').textContent=INV.length;
+
   const list=g('rlist');
   if(!list) return;
-  if(!RXS.length){list.innerHTML='<div class="al ali">No prescriptions yet.</div>';return;}
-  list.innerHTML=RXS.slice(0,15).map(rx=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;align-items:center">
+
+  let html = `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:15px;text-align:center">
+    <div class="sbox" style="background:var(--gl);padding:10px">
+      <div style="font-size:14px;font-weight:700">৳${revDaily}</div>
+      <div style="font-size:9px">Today</div>
+    </div>
+    <div class="sbox" style="background:var(--blue-l);padding:10px">
+      <div style="font-size:14px;font-weight:700">৳${revWeekly}</div>
+      <div style="font-size:9px">Weekly</div>
+    </div>
+    <div class="sbox" style="background:var(--gold-l);padding:10px">
+      <div style="font-size:14px;font-weight:700">৳${revMonthly}</div>
+      <div style="font-size:9px">Monthly</div>
+    </div>
+  </div>`;
+
+  if(!RXS.length){list.innerHTML=html+'<div class="al ali">No prescriptions yet.</div>';return;}
+  html += RXS.slice(0,15).map(rx=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;align-items:center">
     <div><div style="font-weight:600">${rx.patient}</div><div style="font-size:11px;color:var(--t3)">${rx.rxId||rx.id}·${rx.dateStr||rx.date}·${rx.doctorName||''}</div></div>
     <div style="font-weight:600;color:var(--g1)">৳${rx.fee||0}</div>
   </div>`).join('');
+  list.innerHTML = html;
 }
+
+window.printReport = function() {
+  const today = new Date().toISOString().split('T')[0];
+  const todayBills = BILLS.filter(b => b.date === today);
+  const todayRx = RXS.filter(r => r.date === today);
+  const totalRev = todayBills.reduce((s,b)=>s+(b.total||0),0);
+
+  const html = `
+    <div class="rxp" style="max-width:700px;margin:auto;border:1px solid #eee;padding:40px">
+      <div style="text-align:center;margin-bottom:30px">
+        <div style="font-family:'Noto Serif Bengali',serif;font-size:24px;font-weight:700;color:#1a5c3a">এ ইসলাম মেডিকেল হল</div>
+        <div style="font-size:14px;color:#666;margin-top:5px;text-transform:uppercase;letter-spacing:1px">Daily Performance Report</div>
+        <div style="font-size:12px;color:#999;margin-top:3px">Date: ${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</div>
+        <div style="margin:20px auto;width:100px;height:2px;background:#1a5c3a"></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:30px">
+        <div style="padding:15px;background:#f2faf6;border-radius:10px;text-align:center">
+          <div style="font-size:10px;color:#7a9b8a;text-transform:uppercase;letter-spacing:1px">Total Revenue</div>
+          <div style="font-size:20px;font-weight:700;color:#1a5c3a">৳${totalRev}</div>
+        </div>
+        <div style="padding:15px;background:#f0f4f8;border-radius:10px;text-align:center">
+          <div style="font-size:10px;color:#2b5a8a;text-transform:uppercase;letter-spacing:1px">Prescriptions</div>
+          <div style="font-size:20px;font-weight:700;color:#2b5a8a">${todayRx.length}</div>
+        </div>
+        <div style="padding:15px;background:#fff9f0;border-radius:10px;text-align:center">
+          <div style="font-size:10px;color:#a67c00;text-transform:uppercase;letter-spacing:1px">Patients Served</div>
+          <div style="font-size:20px;font-weight:700;color:#a67c00">${todayBills.length}</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <div style="font-weight:700;color:#1a5c3a;border-bottom:2px solid #f2faf6;padding-bottom:5px;margin-bottom:10px;font-size:14px">TODAY'S TRANSACTIONS</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:#f8f8f8;text-align:left">
+              <th style="padding:8px">Time</th>
+              <th style="padding:8px">Patient</th>
+              <th style="padding:8px">Rx ID</th>
+              <th style="padding:8px;text-align:right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${todayBills.map(b => `
+              <tr style="border-bottom:1px solid #f0f0f0">
+                <td style="padding:8px;color:#999">${b.savedAt ? new Date(b.savedAt).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—'}</td>
+                <td style="padding:8px;font-weight:600">${b.patient}</td>
+                <td style="padding:8px;color:#666">${b.rxId}</td>
+                <td style="padding:8px;text-align:right;font-weight:700">৳${b.total}</td>
+              </tr>
+            `).join('') || '<tr><td colspan="4" style="text-align:center;padding:20px;color:#ccc">No transactions recorded today</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top:50px;text-align:center;font-size:10px;color:#999;border-top:1px solid #f0f0f0;padding-top:20px">
+        Report generated on ${new Date().toLocaleString()} by A Islam Medical Hall CMS
+      </div>
+    </div>
+  `;
+
+  const pa=document.getElementById('pa');
+  pa.innerHTML=html; pa.style.display='block';
+  pa.style.cssText='display:block;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;background:#fff;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch';
+
+  const ctrl=document.createElement('div');
+  ctrl.id='pc';
+  ctrl.style.cssText='display:flex;gap:8px;margin-bottom:12px;position:sticky;top:0;background:#fff;padding:8px 0;z-index:100;border-bottom:1px solid #eee';
+  ctrl.innerHTML=`<button class="btn bd bsm" onclick="document.getElementById('pa').style.display='none';document.getElementById('pa').innerHTML=''">✕ Close</button>
+    <button class="btn bp bsm" onclick="window.print()">🖨️ Print Report</button>`;
+  pa.prepend(ctrl);
+};
 
 // ── MODALS ─────────────────────────────────────────────────────
 window.openModal = function(id){document.getElementById(id)?.classList.add('on');};
