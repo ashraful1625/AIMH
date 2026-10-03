@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Stock · A Islam Medical Hall</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <div class="hdr" id="hdr"></div>
+  <div class="nav" id="nav"></div>
+  <div class="cnt">
+    <h1 class="ptitle">💊 Medicine Stock <span class="bn" style="font-size:12px;font-weight:400;color:var(--t3)">ওষুধের স্টক</span></h1>
+    <div class="card">
+      <div class="fbar">
+        <input type="text" id="invsearch" placeholder="Search medicine..." oninput="renderInv(this.value)">
+        <button class="btn bp bsm" id="addinvbtn" onclick="openModal('mmed')" style="display:none">➕ Add</button>
+      </div>
+      <div id="invlist"><div class="al ali">⏳ Loading...</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MEDICINE MODAL -->
+<div class="mbg" id="mmed">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">➕ Add Medicine to Inventory</div>
+    <div class="row r2">
+      <div class="fg full"><label>Medicine Name</label><input type="text" id="nmname" placeholder="e.g. Syrup Napa 60ml"></div>
+      <div class="fg"><label>Type</label>
+        <select id="nmtype"><option value="Tablet">💊 Tablet</option><option value="Syrup">🍯 Syrup</option><option value="Capsule">💊 Capsule</option><option value="Cream">🧴 Cream</option><option value="Drop">💧 Drop</option><option value="Injection">💉 Injection</option><option value="Inhaler">🌬️ Inhaler</option><option value="Saline">🧪 Saline</option><option value="Other">📦 Other</option></select>
+      </div>
+      <div class="fg"><label>Company</label><input type="text" id="nmco" placeholder="Square, ACME..."></div>
+      <div class="fg"><label>Reorder Level</label><input type="number" id="nmreorder" value="10"></div>
+      <div class="fg"><label>Stock Qty</label><input type="number" id="nmstock" value="0"></div>
+      <div class="fg"><label>Buy Price ৳</label><input type="number" id="nmbuy" placeholder="0" step="0.01"></div>
+      <div class="fg"><label>Sell Price ৳</label><input type="number" id="nmsell" placeholder="0" step="0.01"></div>
+    </div>
+    <div class="brow">
+      <button class="btn bp" id="savemedbtn" onclick="saveMed()">✓ Save Medicine</button>
+      <button class="btn bs" onclick="closeModal('mmed')">Cancel</button>
+    </div>
+  </div>
+</div>
+<div id="pa"></div>
+
+<script type="module">
+import { loadAll, requireRole, renderHeader, getSession, openModal, closeModal, sync, fadd, fupd, INV } from './js/core.js';
+
+const session = requireRole(['doctor','staff','admin']);
+let isAdmin=false;
+if(session){
+  await loadAll();
+  renderHeader();
+  document.getElementById('app').classList.add('on');
+  isAdmin = session.role==='admin';
+  const aib=document.getElementById('addinvbtn');
+  if(aib) aib.style.display=isAdmin?'inline-flex':'none';
+  renderInv('');
+}
+
+const IICO={Tablet:'💊',Syrup:'🍯',Capsule:'💊',Cream:'🧴',Drop:'💧',Injection:'💉',Inhaler:'🌬️',Saline:'🧪',Other:'📦'};
+
+window.renderInv=function(q){
+  const s=(q||'').toLowerCase();
+  const meds=INV.filter(m=>!s||m.name.toLowerCase().includes(s)||(m.type||'').toLowerCase().includes(s)||(m.company||'').toLowerCase().includes(s));
+  const el=document.getElementById('invlist');
+  if(!meds.length){ el.innerHTML='<div class="al ali">No medicines found.</div>'; return; }
+  el.innerHTML=meds.map(m=>{
+    const st=m.stock===0?'<span class="badge bout">Out</span>':m.stock<=m.reorder?'<span class="badge blow">Low ⚠️</span>':'<span class="badge bok">OK ✓</span>';
+    const prof=m.buy&&m.sell?'P:৳'+(m.sell-m.buy):'';
+    return '<div class="ii">'+
+      '<div class="iico">'+(IICO[m.type]||'📦')+'</div>'+
+      '<div style="flex:1;min-width:0"><div class="iname">'+m.name+'</div>'+
+      '<div class="imeta">'+m.type+' · '+(m.company||'—')+' · Buy:৳'+(m.buy||0)+' · Sell:৳'+(m.sell||0)+(prof?' '+prof:'')+'</div>'+
+      '<div style="margin-top:3px">'+st+'</div></div>'+
+      '<div class="isa">'+
+        (isAdmin?'<button class="sb" onclick="adjStock(\''+m.id+'\',-1)">−</button>':'')+
+        '<div class="inum">'+m.stock+'</div>'+
+        (isAdmin?'<button class="sb" onclick="adjStock(\''+m.id+'\',1)">+</button>':'')+
+      '</div>'+
+    '</div>';
+  }).join('');
+};
+
+window.adjStock=async function(id,delta){
+  if(!isAdmin){ alert('Admin only!'); return; }
+  const m=INV.find(x=>x.id===id);
+  if(!m) return;
+  try{ await fupd('inventory',id,{stock:Math.max(0,m.stock+delta)}); }
+  catch(e){ console.error('stock update:',e); alert('Failed: '+e.message); }
+};
+
+window.saveMed=async function(){
+  const name=document.getElementById('nmname').value.trim();
+  if(!name){ alert('Enter medicine name!'); return; }
+  const btn=document.getElementById('savemedbtn');
+  btn.innerHTML='<span class="sp"></span>Saving...'; btn.disabled=true;
+  try{
+    await fadd('inventory',{
+      name,
+      type:document.getElementById('nmtype').value,
+      company:document.getElementById('nmco').value||'—',
+      reorder:parseInt(document.getElementById('nmreorder').value)||10,
+      stock:parseInt(document.getElementById('nmstock').value)||0,
+      buy:parseFloat(document.getElementById('nmbuy').value)||0,
+      sell:parseFloat(document.getElementById('nmsell').value)||0,
+      ca:new Date().toISOString()
+    });
+    closeModal('mmed');
+    ['nmname','nmco','nmstock','nmbuy','nmsell'].forEach(id=>{ document.getElementById(id).value=''; });
+    document.getElementById('nmreorder').value='10';
+    sync('✅ Medicine added!');
+  }catch(e){ console.error('saveMed:',e); alert('❌ Failed: '+e.message); }
+  finally{ btn.innerHTML='✓ Save Medicine'; btn.disabled=false; }
+};
+</script>
+</body>
+</html>

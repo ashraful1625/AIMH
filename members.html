@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Members · A Islam Medical Hall</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <div class="hdr" id="hdr"></div>
+  <div class="nav" id="nav"></div>
+  <div class="cnt">
+    <h1 class="ptitle">👥 Members <span class="bn" style="font-size:12px;font-weight:400;color:var(--t3)">সদস্য ব্যবস্থাপনা</span></h1>
+    <div class="card">
+      <div class="rtabs">
+        <button class="rtab on" onclick="selMemberTab('doctor',this)">Doctors</button>
+        <button class="rtab" onclick="selMemberTab('staff',this)">Staff</button>
+      </div>
+      <div id="mem-doc-sec">
+        <button class="btn bp bsm" onclick="openModal('mdoc')" style="margin-bottom:12px;margin-top:10px">➕ Add Doctor</button>
+        <div id="doclist"><div class="al ali">⏳ Loading...</div></div>
+      </div>
+      <div id="mem-staff-sec" style="display:none">
+        <button class="btn bp bsm" onclick="openModal('mstaff')" style="margin-bottom:12px;margin-top:10px">➕ Add Staff</button>
+        <div id="stafflist"><div class="al ali">⏳ Loading...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD DOCTOR MODAL -->
+<div class="mbg" id="mdoc">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">👨‍⚕️ Add Doctor</div>
+    <div class="row r2">
+      <div class="fg full"><label>Full Name</label><input type="text" id="ndname" placeholder="Dr. ..."></div>
+      <div class="fg full"><label>Qualifications</label><input type="text" id="nddeg" placeholder="MBBS, BDS..."></div>
+      <div class="fg"><label>Speciality</label><input type="text" id="ndspec" placeholder="Skin, General..."></div>
+      <div class="fg"><label>Phone</label><input type="tel" id="ndphone" placeholder="01XXXXXXXXX"></div>
+      <div class="fg full"><label>Doctor's Login Password <span class="lbn">ডাক্তারের পাসওয়ার্ড</span></label><input type="text" id="ndpass" placeholder="Password to login as this doctor"></div>
+      <div class="fg full"><label>Chamber Days/Time</label><input type="text" id="nddays" placeholder="e.g. Sat-Thu 5pm-9pm"></div>
+    </div>
+    <div class="brow">
+      <button class="btn bp" id="savedocbtn" onclick="saveDoc()">✓ Save Doctor</button>
+      <button class="btn bs" onclick="closeModal('mdoc')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD STAFF MODAL -->
+<div class="mbg" id="mstaff">
+  <div class="modal">
+    <div class="mhandle"></div>
+    <div class="mtitle">🧑‍💼 Add Staff</div>
+    <div class="row r2">
+      <div class="fg full"><label>Full Name</label><input type="text" id="nsname" placeholder="Name..."></div>
+      <div class="fg"><label>Role/Designation</label><input type="text" id="nsrole" placeholder="Manager, Nurse..."></div>
+      <div class="fg"><label>Phone</label><input type="tel" id="nsphone" placeholder="01XXXXXXXXX"></div>
+      <div class="fg full"><label>Staff's Login Password</label><input type="text" id="nspass" placeholder="Password for this staff"></div>
+    </div>
+    <div class="brow">
+      <button class="btn bp" id="savestaffbtn" onclick="saveStaff()">✓ Save Staff</button>
+      <button class="btn bs" onclick="closeModal('mstaff')">Cancel</button>
+    </div>
+  </div>
+</div>
+<div id="pa"></div>
+
+<script type="module">
+import { loadAll, requireRole, renderHeader, openModal, closeModal, sync, fadd, fdel, DOCS, STAFF } from './js/core.js';
+
+const session = requireRole(['admin']);
+if(session){
+  await loadAll();
+  renderHeader();
+  document.getElementById('app').classList.add('on');
+  renderDocList();
+  renderStaffList();
+}
+
+window.selMemberTab=function(t,btn){
+  document.querySelectorAll('.rtab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('mem-doc-sec').style.display   = t==='doctor'?'block':'none';
+  document.getElementById('mem-staff-sec').style.display = t==='staff'?'block':'none';
+};
+
+window.renderDocList=function(){
+  const el=document.getElementById('doclist');
+  if(!DOCS.length){ el.innerHTML='<div class="al ali">No doctors yet.</div>'; return; }
+  el.innerHTML=DOCS.map(d=>'<div class="dc2">'+
+    '<div class="dav">'+((d.name||'?').replace('Dr. ','').trim().charAt(0))+'</div>'+
+    '<div class="dinfo">'+
+      '<div class="dname">'+d.name+'</div>'+
+      '<div class="ddeg">'+(d.deg||'')+(d.spec?' · '+d.spec:'')+'</div>'+
+      '<div class="dph">📞 '+(d.phone||'—')+(d.days?' · '+d.days:'')+'</div>'+
+      (d.isFounder?'<span class="badge bok" style="margin-top:3px">Founder</span>':'')+
+      (d.isCoFounder?'<span class="badge" style="background:var(--gold-l);color:var(--gold);margin-top:3px">Co-Founder</span>':'')+
+    '</div>'+
+    (!d.isFounder&&!d.isCoFounder?'<button class="btn bd bsm" onclick="delDoc(\''+d.id+'\')">🗑️</button>':'')+
+  '</div>').join('');
+};
+
+window.saveDoc=async function(){
+  const name=document.getElementById('ndname').value.trim();
+  if(!name){ alert('Enter doctor name!'); return; }
+  const btn=document.getElementById('savedocbtn');
+  btn.innerHTML='<span class="sp"></span>Saving...'; btn.disabled=true;
+  try{
+    await fadd('doctors',{
+      name,
+      deg:document.getElementById('nddeg').value.trim(),
+      spec:document.getElementById('ndspec').value.trim(),
+      phone:document.getElementById('ndphone').value.trim(),
+      pass:document.getElementById('ndpass').value.trim(),
+      days:document.getElementById('nddays').value.trim(),
+      ca:new Date().toISOString()
+    });
+    closeModal('mdoc');
+    ['ndname','nddeg','ndspec','ndphone','ndpass','nddays'].forEach(id=>{ document.getElementById(id).value=''; });
+    sync('✅ Doctor added!');
+    setTimeout(()=>location.reload(), 1200);
+  }catch(e){ console.error('saveDoc error:',e); alert('❌ Failed to save doctor: '+e.message); }
+  finally{ btn.innerHTML='✓ Save Doctor'; btn.disabled=false; }
+};
+
+window.delDoc=async function(id){
+  if(!confirm('Delete this doctor?')) return;
+  try{ await fdel('doctors',id); setTimeout(()=>location.reload(),800); }catch(e){ alert('Failed: '+e.message); }
+};
+
+window.renderStaffList=function(){
+  const el=document.getElementById('stafflist');
+  if(!STAFF.length){ el.innerHTML='<div class="al ali">No staff yet.</div>'; return; }
+  el.innerHTML=STAFF.map(s=>'<div class="dc2">'+
+    '<div class="dav">'+(s.name||'?').charAt(0).toUpperCase()+'</div>'+
+    '<div class="dinfo">'+
+      '<div class="dname">'+s.name+'</div>'+
+      '<div class="ddeg">'+(s.role||'Staff')+'</div>'+
+      '<div class="dph">📞 '+(s.phone||'—')+'</div>'+
+    '</div>'+
+    '<button class="btn bd bsm" onclick="delStaff(\''+s.id+'\')">🗑️</button>'+
+  '</div>').join('');
+};
+
+window.saveStaff=async function(){
+  const name=document.getElementById('nsname').value.trim();
+  if(!name){ alert('Enter staff name!'); return; }
+  const btn=document.getElementById('savestaffbtn');
+  btn.innerHTML='<span class="sp"></span>Saving...'; btn.disabled=true;
+  try{
+    await fadd('staff',{
+      name,
+      role:document.getElementById('nsrole').value.trim(),
+      phone:document.getElementById('nsphone').value.trim(),
+      pass:document.getElementById('nspass').value.trim(),
+      ca:new Date().toISOString()
+    });
+    closeModal('mstaff');
+    ['nsname','nsrole','nsphone','nspass'].forEach(id=>{ document.getElementById(id).value=''; });
+    sync('✅ Staff added!');
+    setTimeout(()=>location.reload(), 1200);
+  }catch(e){ alert('❌ Failed: '+e.message); }
+  finally{ btn.innerHTML='✓ Save Staff'; btn.disabled=false; }
+};
+
+window.delStaff=async function(id){
+  if(!confirm('Delete this staff?')) return;
+  try{ await fdel('staff',id); setTimeout(()=>location.reload(),800); }catch(e){ alert('Failed: '+e.message); }
+};
+</script>
+</body>
+</html>

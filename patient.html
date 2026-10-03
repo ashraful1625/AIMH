@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Patients · A Islam Medical Hall</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <div class="hdr" id="hdr"></div>
+  <div class="nav" id="nav"></div>
+  <div class="cnt">
+    <h1 class="ptitle">👤 Patient Records <span class="bn" style="font-size:12px;font-weight:400;color:var(--t3)">রোগীর তথ্য</span></h1>
+    <div class="card">
+      <div class="fbar">
+        <input type="text" id="ptsearch" placeholder="Name / phone / ID..." oninput="renderPts()">
+        <input type="date" id="ptdate" onchange="renderPts()" style="width:auto">
+        <button class="btn bs bsm" onclick="document.getElementById('ptdate').value='';renderPts()">✕</button>
+      </div>
+      <div id="ptlist"></div>
+    </div>
+  </div>
+</div>
+<div id="pa"></div>
+
+<script type="module">
+import { loadAll, requireRole, renderHeader, PTS } from './js/core.js';
+
+const session = requireRole(['staff','admin']);
+if(session){
+  await loadAll();
+  renderHeader();
+  document.getElementById('app').classList.add('on');
+  renderPts();
+}
+
+window.renderPts=function(){
+  const q=(document.getElementById('ptsearch').value||'').toLowerCase();
+  const df=document.getElementById('ptdate').value||'';
+  let f=PTS;
+  if(q) f=f.filter(p=>(p.name||'').toLowerCase().includes(q)||(p.phone||'').includes(q)||(p.id||'').toLowerCase().includes(q));
+  if(df) f=f.filter(p=>p.lastVisit===df);
+  const el=document.getElementById('ptlist');
+  if(!f.length){ el.innerHTML='<div class="al ali">ℹ️ No patients found.</div>'; return; }
+  el.innerHTML=f.map(p=>{
+    const lastRxId=p.rxIds&&p.rxIds.length?p.rxIds[p.rxIds.length-1]:'';
+    return '<div class="pi" '+(lastRxId?'onclick="goToBilling(\''+lastRxId+'\')" style="cursor:pointer"':'')+'>'+
+      '<div class="pav">'+(p.name||'?').charAt(0).toUpperCase()+'</div>'+
+      '<div class="pinfo"><div class="pname">'+(p.name||'—')+'</div>'+
+      '<div class="pmeta">'+(p.gender||'—')+' · Age '+(p.age||'—')+' · '+(p.phone||'—')+'</div>'+
+      '<div class="pmeta">Visits:'+(p.visits||1)+' · Last:'+(p.lastVisit||'—')+'</div></div>'+
+      (lastRxId?'<div class="pbadge">'+lastRxId+'</div>':'')+
+    '</div>';
+  }).join('');
+};
+
+window.goToBilling=function(rxId){
+  if(rxId) location.href='billing.html?rx='+rxId;
+};
+</script>
+</body>
+</html>
