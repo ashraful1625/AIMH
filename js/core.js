@@ -12,7 +12,7 @@ const fbApp = initializeApp({
   projectId:"aimh-clinic",
   storageBucket:"aimh-clinic.firebasestorage.app",
   messagingSenderId:"1096968366081",
-  appId:"1:1096968366081:web:525a658a6479310a687800"
+  appId:"1:1096968366081:web:2da7e0540cca7ad7687800"
 });
 const db = getFirestore(fbApp);
 
