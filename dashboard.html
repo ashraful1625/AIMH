@@ -15,67 +15,40 @@
 </div>
 <div id="app">
   <div class="hdr" id="hdr"></div>
-  <div class="nav" id="nav"></div>
   <div class="cnt">
-    <h1 class="ptitle">🏠 Dashboard</h1>
-
-    <div class="card">
-      <div class="ct">📊 Overview <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">সারসংক্ষেপ</span></div>
-      <div class="sgrid" style="margin-bottom:0">
-        <div class="sbox" style="background:var(--gl)"><div class="snum" style="color:var(--g1)" id="drev">—</div><div class="slbl" style="color:var(--t2)">Today's Revenue ৳</div></div>
-        <div class="sbox" style="background:var(--gold-l)"><div class="snum" style="color:var(--gold)" id="drx">—</div><div class="slbl" style="color:var(--t2)">Prescriptions</div></div>
-        <div class="sbox" style="background:var(--blue-l)"><div class="snum" style="color:var(--blue)" id="dpts">—</div><div class="slbl" style="color:var(--t2)">Patients</div></div>
-        <div class="sbox" style="background:var(--red-l)"><div class="snum" style="color:var(--red)" id="dlow">—</div><div class="slbl" style="color:var(--t2)">Low Stock ⚠️</div></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="ct">⚡ Quick Access <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">দ্রুত অ্যাক্সেস</span></div>
-      <div class="qgrid" id="quick"></div>
-    </div>
-
-    <div class="card">
-      <div class="ct">🕒 Recent Prescriptions <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">সাম্প্রতিক</span></div>
-      <div id="recent"><div class="al ali">⏳ Loading...</div></div>
-    </div>
+    <h1 class="ptitle">Clinic Modules</h1>
+    <div class="qgrid" id="modules"></div>
   </div>
 </div>
-<div id="pa"></div>
 
 <script type="module">
-import { loadAll, requireRole, renderHeader, NAV, RXS, PTS, BILLS, INV } from './js/core.js';
+import { requireRole, renderHeader, NAV } from './js/core.js';
+
+const moduleDetails={
+  'prescription.html':'Create and manage prescriptions',
+  'billing.html':'Process prescription payments',
+  'patient.html':'Find and review patient records',
+  'stock.html':'View medicine inventory',
+  'members.html':'Manage clinic team members',
+  'passwords.html':'Manage account access',
+  'overall_reports.html':'Review clinic reports',
+  'company_bill.html':'Track supplier invoices'
+};
 
 try{
   const s = await requireRole(['doctor','staff','admin']);
   if(s){
-    await loadAll();
     renderHeader();
 
-    const today = new Date().toISOString().split('T')[0];
-    const lowStock = INV.filter(m => m.stock <= m.reorder).length;
-    const revToday = BILLS.filter(b => b.date === today).reduce((sum,b) => sum + (b.total||0), 0);
-
-    document.getElementById('drev').textContent  = s.role==='doctor' ? '—' : revToday.toFixed(0);
-    document.getElementById('drx').textContent   = RXS.length;
-    document.getElementById('dpts').textContent  = PTS.length;
-    document.getElementById('dlow').textContent  = lowStock;
-
-    document.getElementById('quick').innerHTML = NAV[s.role]
+    document.getElementById('modules').innerHTML = NAV[s.role]
       .filter(p => p.href !== 'dashboard.html')
-      .map(p => '<a class="qlink" href="'+p.href+'"><span class="qi">'+p.icon+'</span><span class="qt">'+p.label+'</span></a>')
+      .map(p => '<a class="qlink" href="'+p.href+'">'+
+        '<span class="qi">'+p.icon+'</span>'+
+        '<span class="qt">'+p.label+'</span>'+
+        '<span class="qd">'+moduleDetails[p.href]+'</span>'+
+        '<span class="qopen">Open module <span aria-hidden="true">→</span></span>'+
+      '</a>')
       .join('');
-
-    const el = document.getElementById('recent');
-    if(!RXS.length){ el.innerHTML = '<div class="al ali">No prescriptions yet.</div>'; }
-    else{
-      el.innerHTML = RXS.slice(0,10).map(rx =>
-        '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;align-items:center">'+
-          '<div><div style="font-weight:600">'+rx.patient+'</div>'+
-          '<div style="font-size:11px;color:var(--t3)">'+(rx.rxId||rx.id)+' · '+(rx.dateStr||rx.date)+' · '+(rx.doctorName||'')+'</div></div>'+
-          '<div style="font-weight:600;color:var(--g1)">৳'+(rx.fee||0)+'</div>'+
-        '</div>'
-      ).join('');
-    }
     document.getElementById('app').classList.add('on');
   }
 }catch(error){

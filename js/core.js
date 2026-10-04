@@ -1,22 +1,24 @@
 // core.js — shared data layer, auth, session & navigation for AIMH Clinic System
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { deleteApp, initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, collection, doc, getDocs, addDoc, setDoc,
-  updateDoc, deleteDoc, query, orderBy, limit, getDoc
+  updateDoc, deleteDoc, query, orderBy, limit, getDoc, where
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
-  getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  deleteUser, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // ── Firebase init ──────────────────────────────────────────────
-const fbApp = initializeApp({
+const firebaseConfig = {
   apiKey:"AIzaSyDCemH-vgrftahNerSdqlfVJG9-yaCFqwc",
   authDomain:"aimh-clinic-ashraful.firebaseapp.com",
   projectId:"aimh-clinic-ashraful",
   storageBucket:"aimh-clinic-ashraful.firebasestorage.app",
   messagingSenderId:"745755057160",
   appId:"1:745755057160:web:c45fb16e7c23fc685c85bd"
-});
+};
+const fbApp = initializeApp(firebaseConfig);
 const db = getFirestore(fbApp, "aimh-main");
 const auth = getAuth(fbApp);
 const authReady = new Promise(resolve => onAuthStateChanged(auth, resolve, error => {
@@ -58,6 +60,94 @@ export async function loadAll(){
   PTS   = pts.docs.map(d=>({id:d.id,...d.data()}));
   RXS   = rxs.docs.map(d=>({id:d.id,...d.data()}));
   BILLS = bills.docs.map(d=>({id:d.id,...d.data()}));
+}
+
+export async function loadMembers(){
+  if(session?.role!=='admin') throw new Error('Only administrators can load member profiles.');
+  const [doctors,staff]=await Promise.all([
+    getDocs(col('doctors')),
+    getDocs(col('staff'))
+  ]);
+  DOCS=doctors.docs.map(d=>({id:d.id,...d.data()}));
+  STAFF=staff.docs.map(d=>({id:d.id,...d.data()}));
+}
+
+export async function createDoctorAccount({email,password,name,deg,spec,phone,days}){
+  if(session?.role!=='admin') throw new Error('Only an administrator can add doctor accounts.');
+  const provisioner=initializeApp(firebaseConfig,'aimh-doctor-provisioner');
+  const provisionerAuth=getAuth(provisioner);
+  let user=null;
+  let doctorId=null;
+  let roleCreated=false;
+  try{
+    const credential=await createUserWithEmailAndPassword(provisionerAuth,email,password);
+    user=credential.user;
+    const doctor=await fadd('doctors',{
+      name,deg,spec,phone,days,ca:new Date().toISOString()
+    });
+    doctorId=doctor.id;
+    await fset('user_roles',user.uid,{
+      uid:user.uid,name,role:'doctor',profileId:doctorId
+    });
+    roleCreated=true;
+    return doctorId;
+  }catch(error){
+    if(roleCreated && user){
+      try{ await fdel('user_roles',user.uid); }
+      catch(cleanupError){ console.error('Could not roll back the doctor role:',cleanupError); }
+    }
+    if(doctorId){
+      try{ await fdel('doctors',doctorId); }
+      catch(cleanupError){ console.error('Could not roll back the doctor profile:',cleanupError); }
+    }
+    if(user){
+      try{ await deleteUser(user); }
+      catch(cleanupError){ console.error('Could not roll back the new Firebase account:',cleanupError); }
+    }
+    throw error;
+  }finally{
+    try{ await signOut(provisionerAuth); }
+    finally{ await deleteApp(provisioner); }
+  }
+}
+
+export async function createStaffAccount({email,password,name,role,phone}){
+  if(session?.role!=='admin') throw new Error('Only an administrator can add staff accounts.');
+  const provisioner=initializeApp(firebaseConfig,'aimh-staff-provisioner');
+  const provisionerAuth=getAuth(provisioner);
+  let user=null;
+  let staffId=null;
+  try{
+    const credential=await createUserWithEmailAndPassword(provisionerAuth,email,password);
+    user=credential.user;
+    const staff=await fadd('staff',{
+      name,role,phone,ca:new Date().toISOString()
+    });
+    staffId=staff.id;
+    await fset('user_roles',user.uid,{
+      uid:user.uid,name,role:'staff',profileId:staffId
+    });
+    return staffId;
+  }catch(error){
+    if(staffId){
+      try{ await fdel('staff',staffId); }
+      catch(cleanupError){ console.error('Could not roll back the staff profile:',cleanupError); }
+    }
+    if(user){
+      try{ await deleteUser(user); }
+      catch(cleanupError){ console.error('Could not roll back the new Firebase account:',cleanupError); }
+    }
+    throw error;
+  }finally{
+    try{ await signOut(provisionerAuth); }
+    finally{ await deleteApp(provisioner); }
+  }
+}
+
+export async function revokeMemberAccess(profileId){
+  if(session?.role!=='admin') throw new Error('Only an administrator can remove member access.');
+  const roles=await getDocs(query(col('user_roles'),where('profileId','==',profileId)));
+  await Promise.all(roles.docs.map(role=>fdel('user_roles',role.id)));
 }
 
 // ── Authentication and role profile ───────────────────────────
@@ -145,23 +235,79 @@ export const NAV = {
 // ── Header + nav renderer ─────────────────────────────────────
 export function renderHeader(){
   const s=getSession(); if(!s) return;
-  const uname=(ROLE_ICONS[s.role]||'')+s.name;
-  const cur=(location.pathname.split('/').pop()||'dashboard.html');
   const hdr=document.getElementById('hdr');
-  if(hdr) hdr.innerHTML=
+  if(!hdr) return;
+  hdr.innerHTML=
     '<div class="hl">'+
       '<div class="hlogo">AI</div>'+
       '<div><div class="htitle">A Islam Medical Hall</div><div class="hsub">Kasba Puratan Bazar, Kasba, Brahmanbaria</div></div>'+
     '</div>'+
     '<div class="hr">'+
-      '<div class="huser">'+uname+'</div>'+
-      '<div class="hsync" id="hsync">🟢</div>'+
-      '<button class="hout" onclick="AIMH.logout()" title="Logout">⏻</button>'+
+      '<button class="menu-toggle" id="account-menu-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="account-menu">'+
+        '<span aria-hidden="true">☰</span><span>Menu</span>'+
+      '</button>'+
+      '<div class="account-menu" id="account-menu" role="menu" hidden>'+
+        '<div class="menu-profile">'+
+          '<span class="menu-profile-icon" aria-hidden="true">'+(ROLE_ICONS[s.role]||'👤')+'</span>'+
+          '<span><strong id="menu-profile-name"></strong><small id="menu-profile-role"></small><small id="menu-profile-email"></small></span>'+
+        '</div>'+
+        '<div class="menu-sync"><span>Sync status</span><span class="hsync" id="hsync">🟢</span></div>'+
+        '<a class="menu-item" role="menuitem" href="dashboard.html">🏠 <span>Modules</span></a>'+
+        '<button class="menu-item" id="menu-faq" type="button" role="menuitem">❔ <span>FAQ</span></button>'+
+        '<div class="menu-section-label">Customer service</div>'+
+        '<a class="menu-item" role="menuitem" href="tel:01884794060">📞 <span>Ashraful Islam · 01884794060</span></a>'+
+        '<a class="menu-item" role="menuitem" href="tel:01830079952">📞 <span>Clinic · 01830079952</span></a>'+
+        '<button class="menu-item menu-logout" id="menu-logout" type="button" role="menuitem">⏻ <span>Log out</span></button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="faq-backdrop" id="faq-backdrop" hidden>'+
+      '<section class="faq-dialog" role="dialog" aria-modal="true" aria-labelledby="faq-title">'+
+        '<button class="faq-close" id="faq-close" type="button" aria-label="Close FAQ">×</button>'+
+        '<h2 id="faq-title">Frequently asked questions</h2>'+
+        '<h3>How do I access a module?</h3><p>Open the Menu and choose Modules, then select a module card available for your role.</p>'+
+        '<h3>Why can’t I sign in?</h3><p>Use the email and password created for you in Firebase Authentication. Contact an administrator if your account has not been assigned a clinic role.</p>'+
+        '<h3>Who can help me?</h3><p>Use one of the Customer service phone links in the Menu.</p>'+
+      '</section>'+
     '</div>';
-  const nav=document.getElementById('nav');
-  if(nav) nav.innerHTML=NAV[s.role].map(p=>
-    '<a class="nb'+(p.href===cur?' on':'')+'" href="'+p.href+'"><span class="ni">'+p.icon+'</span><span class="nl">'+p.label+'</span></a>'
-  ).join('');
+  document.getElementById('menu-profile-name').textContent=s.name;
+  document.getElementById('menu-profile-role').textContent=ROLE_NAMES[s.role]||s.role;
+  document.getElementById('menu-profile-email').textContent=s.email||'';
+
+  const toggle=document.getElementById('account-menu-toggle');
+  const menu=document.getElementById('account-menu');
+  const closeMenu=()=>{
+    menu.hidden=true;
+    toggle.setAttribute('aria-expanded','false');
+  };
+  toggle.addEventListener('click',()=>{
+    menu.hidden=!menu.hidden;
+    toggle.setAttribute('aria-expanded',String(!menu.hidden));
+  });
+  document.getElementById('menu-faq').addEventListener('click',()=>{
+    closeMenu();
+    document.getElementById('faq-backdrop').hidden=false;
+    document.getElementById('faq-close').focus();
+  });
+  document.getElementById('faq-close').addEventListener('click',()=>{
+    document.getElementById('faq-backdrop').hidden=true;
+    toggle.focus();
+  });
+  document.getElementById('faq-backdrop').addEventListener('click',event=>{
+    if(event.target.id==='faq-backdrop') document.getElementById('faq-backdrop').hidden=true;
+  });
+  document.getElementById('menu-logout').addEventListener('click',async()=>{
+    try{ await logout(); }
+    catch(error){ console.error('Logout failed:',error); alert('Logout failed: '+error.message); }
+  });
+  document.addEventListener('click',event=>{
+    if(!menu.hidden && !hdr.contains(event.target)) closeMenu();
+  });
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'){
+      closeMenu();
+      document.getElementById('faq-backdrop').hidden=true;
+    }
+  });
 }
 
 // ── Toast / sync indicator ────────────────────────────────────

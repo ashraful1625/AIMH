@@ -10,41 +10,54 @@
 <body>
 <div id="app">
   <div class="hdr" id="hdr"></div>
-  <div class="nav" id="nav"></div>
   <div class="cnt">
     <h1 class="ptitle">👥 Members <span class="bn" style="font-size:12px;font-weight:400;color:var(--t3)">সদস্য ব্যবস্থাপনা</span></h1>
+    <p class="cs">Add doctor and staff profiles with individual sign-in accounts. Doctors can use Prescriptions and Stock; staff can use their assigned staff modules.</p>
     <div class="card">
-      <div class="rtabs">
-        <button class="rtab on" onclick="selMemberTab('doctor',this)">Doctors</button>
-        <button class="rtab" onclick="selMemberTab('staff',this)">Staff</button>
+      <div class="member-toolbar">
+        <div class="rtabs" role="tablist" aria-label="Member type">
+          <button class="rtab on" id="doctors-tab" role="tab" aria-selected="true" aria-controls="mem-doc-sec" onclick="selMemberTab('doctor',this)">Doctors <span id="doctor-count">(0)</span></button>
+          <button class="rtab" id="staff-tab" role="tab" aria-selected="false" aria-controls="mem-staff-sec" onclick="selMemberTab('staff',this)">Staff <span id="staff-count">(0)</span></button>
+        </div>
+        <label class="member-search">
+          <span class="sr-only">Search members</span>
+          <input type="search" id="member-search" placeholder="Search by name, phone, specialty..." autocomplete="off">
+        </label>
       </div>
-      <div id="mem-doc-sec">
-        <button class="btn bp bsm" onclick="openModal('mdoc')" style="margin-bottom:12px;margin-top:10px">➕ Add Doctor</button>
+      <div id="mem-doc-sec" role="tabpanel" aria-labelledby="doctors-tab">
+        <div class="member-section-head">
+          <div><div class="ct">Doctors</div><div class="cs">Doctor profiles and chamber details</div></div>
+          <button class="btn bp bsm" id="add-doctor-btn" type="button">➕ Add Doctor</button>
+        </div>
         <div id="doclist"><div class="al ali">⏳ Loading...</div></div>
       </div>
-      <div id="mem-staff-sec" style="display:none">
-        <button class="btn bp bsm" onclick="openModal('mstaff')" style="margin-bottom:12px;margin-top:10px">➕ Add Staff</button>
+      <div id="mem-staff-sec" role="tabpanel" aria-labelledby="staff-tab" style="display:none">
+        <div class="member-section-head">
+          <div><div class="ct">Staff</div><div class="cs">Staff roles and contact details</div></div>
+          <button class="btn bp bsm" id="add-staff-btn" type="button">➕ Add Staff</button>
+        </div>
         <div id="stafflist"><div class="al ali">⏳ Loading...</div></div>
       </div>
     </div>
   </div>
 </div>
-
 <!-- ADD DOCTOR MODAL -->
 <div class="mbg" id="mdoc">
   <div class="modal">
     <div class="mhandle"></div>
     <div class="mtitle">👨‍⚕️ Add Doctor</div>
     <div class="row r2">
-      <div class="fg full"><label>Full Name</label><input type="text" id="ndname" placeholder="Dr. ..."></div>
-      <div class="fg full"><label>Qualifications</label><input type="text" id="nddeg" placeholder="MBBS, BDS..."></div>
-      <div class="fg"><label>Speciality</label><input type="text" id="ndspec" placeholder="Skin, General..."></div>
-      <div class="fg"><label>Phone</label><input type="tel" id="ndphone" placeholder="01XXXXXXXXX"></div>
-      <div class="fg full"><label>Chamber Days/Time</label><input type="text" id="nddays" placeholder="e.g. Sat-Thu 5pm-9pm"></div>
+      <div class="fg full"><label for="ndname">Full Name</label><input type="text" id="ndname" placeholder="Dr. ..." maxlength="100" autocomplete="name" required></div>
+      <div class="fg full"><label for="ndemail">Doctor's Email</label><input type="email" id="ndemail" placeholder="doctor@example.com" maxlength="254" autocomplete="off" required></div>
+      <div class="fg full"><label for="ndpassword">Temporary Password</label><input type="password" id="ndpassword" placeholder="At least 6 characters" minlength="6" autocomplete="new-password" required></div>
+      <div class="fg full"><label for="nddeg">Qualifications</label><input type="text" id="nddeg" placeholder="MBBS, BDS..." maxlength="160"></div>
+      <div class="fg"><label for="ndspec">Speciality</label><input type="text" id="ndspec" placeholder="Skin, General..." maxlength="160"></div>
+      <div class="fg"><label for="ndphone">Phone</label><input type="tel" id="ndphone" placeholder="01XXXXXXXXX" maxlength="30"></div>
+      <div class="fg full"><label for="nddays">Chamber Days/Time</label><input type="text" id="nddays" placeholder="e.g. Sat-Thu 5pm-9pm" maxlength="100"></div>
     </div>
     <div class="brow">
       <button class="btn bp" id="savedocbtn" onclick="saveDoc()">✓ Save Doctor</button>
-      <button class="btn bs" onclick="closeModal('mdoc')">Cancel</button>
+      <button class="btn bs" id="cancel-doctor-btn" type="button">Cancel</button>
     </div>
   </div>
 </div>
@@ -55,118 +68,192 @@
     <div class="mhandle"></div>
     <div class="mtitle">🧑‍💼 Add Staff</div>
     <div class="row r2">
-      <div class="fg full"><label>Full Name</label><input type="text" id="nsname" placeholder="Name..."></div>
-      <div class="fg"><label>Role/Designation</label><input type="text" id="nsrole" placeholder="Manager, Nurse..."></div>
-      <div class="fg"><label>Phone</label><input type="tel" id="nsphone" placeholder="01XXXXXXXXX"></div>
+      <div class="fg full"><label for="nsname">Full Name</label><input type="text" id="nsname" placeholder="Name..." maxlength="100" autocomplete="name" required></div>
+      <div class="fg full"><label for="nsemail">Staff Email</label><input type="email" id="nsemail" placeholder="staff@example.com" maxlength="254" autocomplete="off" required></div>
+      <div class="fg full"><label for="nspassword">Temporary Password</label><input type="password" id="nspassword" placeholder="At least 6 characters" minlength="6" autocomplete="new-password" required></div>
+      <div class="fg"><label for="nsrole">Role/Designation</label><input type="text" id="nsrole" placeholder="Manager, Nurse..." maxlength="100"></div>
+      <div class="fg"><label for="nsphone">Phone</label><input type="tel" id="nsphone" placeholder="01XXXXXXXXX" maxlength="30"></div>
     </div>
     <div class="brow">
       <button class="btn bp" id="savestaffbtn" onclick="saveStaff()">✓ Save Staff</button>
-      <button class="btn bs" onclick="closeModal('mstaff')">Cancel</button>
+      <button class="btn bs" id="cancel-staff-btn" type="button">Cancel</button>
     </div>
   </div>
 </div>
 <div id="pa"></div>
 
 <script type="module">
-import { loadAll, requireRole, renderHeader, openModal, closeModal, sync, fadd, fdel, DOCS, STAFF } from './js/core.js';
+import { loadMembers, requireRole, renderHeader, openModal, closeModal, sync, fdel, createDoctorAccount, createStaffAccount, revokeMemberAccess, DOCS, STAFF } from './js/core.js';
 
 const session = await requireRole(['admin']);
 if(session){
-  await loadAll();
   renderHeader();
   document.getElementById('app').classList.add('on');
-  renderDocList();
-  renderStaffList();
+  document.getElementById('add-doctor-btn').addEventListener('click',()=>openModal('mdoc'));
+  document.getElementById('add-staff-btn').addEventListener('click',()=>openModal('mstaff'));
+  document.getElementById('cancel-doctor-btn').addEventListener('click',()=>closeModal('mdoc'));
+  document.getElementById('cancel-staff-btn').addEventListener('click',()=>closeModal('mstaff'));
+  document.getElementById('member-search').addEventListener('input',()=>{
+    renderDocList();
+    renderStaffList();
+  });
+  try{
+    await refreshMembers();
+  }catch(error){
+    console.error('Members startup failed:',error);
+    const message=
+      error.code==='permission-denied'
+        ? 'Firestore denied access. Confirm you are signed in as an admin and the user_roles document is correct.'
+        : 'Could not load member profiles: '+(error.message||'Unknown error');
+    document.getElementById('doclist').innerHTML='<div class="al ale">'+escapeHTML(message)+'</div>';
+    document.getElementById('stafflist').innerHTML='<div class="al ale">'+escapeHTML(message)+'</div>';
+  }
 }
 
 window.selMemberTab=function(t,btn){
-  document.querySelectorAll('.rtab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('[role="tab"]').forEach(b=>{
+    b.classList.remove('on');
+    b.setAttribute('aria-selected','false');
+  });
   btn.classList.add('on');
+  btn.setAttribute('aria-selected','true');
   document.getElementById('mem-doc-sec').style.display   = t==='doctor'?'block':'none';
   document.getElementById('mem-staff-sec').style.display = t==='staff'?'block':'none';
 };
 
-window.renderDocList=function(){
+function escapeHTML(value){
+  return String(value||'').replace(/[&<>"']/g,char=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[char]);
+}
+
+function matchesSearch(values){
+  const search=document.getElementById('member-search').value.trim().toLowerCase();
+  return !search||values.some(value=>String(value||'').toLowerCase().includes(search));
+}
+
+async function refreshMembers(){
+  await loadMembers();
+  renderDocList();
+  renderStaffList();
+}
+
+function renderDocList(){
   const el=document.getElementById('doclist');
-  if(!DOCS.length){ el.innerHTML='<div class="al ali">No doctors yet.</div>'; return; }
-  el.innerHTML=DOCS.map(d=>'<div class="dc2">'+
-    '<div class="dav">'+((d.name||'?').replace('Dr. ','').trim().charAt(0))+'</div>'+
+  document.getElementById('doctor-count').textContent='('+DOCS.length+')';
+  const doctors=DOCS.filter(d=>matchesSearch([d.name,d.deg,d.spec,d.phone,d.days]));
+  if(!doctors.length){
+    el.innerHTML='<div class="al ali">'+(DOCS.length?'No doctors match your search.':'No doctor profiles yet. Use “Add Doctor” to create one.')+'</div>';
+    return;
+  }
+  el.innerHTML=doctors.map(d=>'<div class="dc2">'+
+    '<div class="dav">'+escapeHTML((d.name||'?').replace('Dr. ','').trim().charAt(0))+'</div>'+
     '<div class="dinfo">'+
-      '<div class="dname">'+d.name+'</div>'+
-      '<div class="ddeg">'+(d.deg||'')+(d.spec?' · '+d.spec:'')+'</div>'+
-      '<div class="dph">📞 '+(d.phone||'—')+(d.days?' · '+d.days:'')+'</div>'+
+      '<div class="dname">'+escapeHTML(d.name)+'</div>'+
+      '<div class="ddeg">'+escapeHTML(d.deg)+(d.spec?' · '+escapeHTML(d.spec):'')+'</div>'+
+      '<div class="dph">📞 '+escapeHTML(d.phone||'—')+(d.days?' · '+escapeHTML(d.days):'')+'</div>'+
       (d.isFounder?'<span class="badge bok" style="margin-top:3px">Founder</span>':'')+
       (d.isCoFounder?'<span class="badge" style="background:var(--gold-l);color:var(--gold);margin-top:3px">Co-Founder</span>':'')+
     '</div>'+
-    (!d.isFounder&&!d.isCoFounder?'<button class="btn bd bsm" onclick="delDoc(\''+d.id+'\')">🗑️</button>':'')+
+    (!d.isFounder&&!d.isCoFounder?'<button class="btn bd bsm" type="button" data-delete-doctor="'+escapeHTML(d.id)+'" aria-label="Delete '+escapeHTML(d.name)+'">🗑️</button>':'')+
   '</div>').join('');
-};
+  el.querySelectorAll('[data-delete-doctor]').forEach(button=>{
+    button.addEventListener('click',()=>window.delDoc(button.dataset.deleteDoctor));
+  });
+}
 
 window.saveDoc=async function(){
   const name=document.getElementById('ndname').value.trim();
-  if(!name){ alert('Enter doctor name!'); return; }
+  if(!name){ alert('Enter doctor name!'); document.getElementById('ndname').focus(); return; }
+  const email=document.getElementById('ndemail').value.trim();
+  const password=document.getElementById('ndpassword').value;
+  if(!email||!document.getElementById('ndemail').validity.valid){ alert('Enter a valid doctor email address.'); document.getElementById('ndemail').focus(); return; }
+  if(password.length<6){ alert('Temporary password must be at least 6 characters.'); document.getElementById('ndpassword').focus(); return; }
   const btn=document.getElementById('savedocbtn');
   btn.innerHTML='<span class="sp"></span>Saving...'; btn.disabled=true;
   try{
-    await fadd('doctors',{
-      name,
+    await createDoctorAccount({
+      email,password,name,
       deg:document.getElementById('nddeg').value.trim(),
       spec:document.getElementById('ndspec').value.trim(),
       phone:document.getElementById('ndphone').value.trim(),
-      days:document.getElementById('nddays').value.trim(),
-      ca:new Date().toISOString()
+      days:document.getElementById('nddays').value.trim()
     });
+    await refreshMembers();
     closeModal('mdoc');
-    ['ndname','nddeg','ndspec','ndphone','nddays'].forEach(id=>{ document.getElementById(id).value=''; });
-    sync('✅ Doctor added!');
-    setTimeout(()=>location.reload(), 1200);
-  }catch(e){ console.error('saveDoc error:',e); alert('❌ Failed to save doctor: '+e.message); }
+    ['ndname','ndemail','ndpassword','nddeg','ndspec','ndphone','nddays'].forEach(id=>{ document.getElementById(id).value=''; });
+    sync('✅ Doctor account and profile added!');
+    alert('Doctor account created. Share the email and temporary password with the doctor securely.');
+  }catch(e){ console.error('saveDoc error:',e); alert('❌ Failed to create doctor account: '+(e.message||'Unknown error')); }
   finally{ btn.innerHTML='✓ Save Doctor'; btn.disabled=false; }
 };
 
 window.delDoc=async function(id){
-  if(!confirm('Delete this doctor?')) return;
-  try{ await fdel('doctors',id); setTimeout(()=>location.reload(),800); }catch(e){ alert('Failed: '+e.message); }
+  if(!confirm('Delete this doctor profile and revoke its app access? The Firebase Authentication account will remain but cannot access clinic data.')) return;
+  try{
+    await revokeMemberAccess(id);
+    await fdel('doctors',id);
+    await refreshMembers();
+    sync('✅ Doctor profile removed and access revoked.');
+  }catch(e){ console.error('Delete doctor failed:',e); alert('Failed: '+e.message); }
 };
 
-window.renderStaffList=function(){
+function renderStaffList(){
   const el=document.getElementById('stafflist');
-  if(!STAFF.length){ el.innerHTML='<div class="al ali">No staff yet.</div>'; return; }
-  el.innerHTML=STAFF.map(s=>'<div class="dc2">'+
-    '<div class="dav">'+(s.name||'?').charAt(0).toUpperCase()+'</div>'+
+  document.getElementById('staff-count').textContent='('+STAFF.length+')';
+  const staff=STAFF.filter(s=>matchesSearch([s.name,s.role,s.phone]));
+  if(!staff.length){
+    el.innerHTML='<div class="al ali">'+(STAFF.length?'No staff match your search.':'No staff profiles yet. Use “Add Staff” to create one.')+'</div>';
+    return;
+  }
+  el.innerHTML=staff.map(s=>'<div class="dc2">'+
+    '<div class="dav">'+escapeHTML((s.name||'?').charAt(0).toUpperCase())+'</div>'+
     '<div class="dinfo">'+
-      '<div class="dname">'+s.name+'</div>'+
-      '<div class="ddeg">'+(s.role||'Staff')+'</div>'+
-      '<div class="dph">📞 '+(s.phone||'—')+'</div>'+
+      '<div class="dname">'+escapeHTML(s.name)+'</div>'+
+      '<div class="ddeg">'+escapeHTML(s.role||'Staff')+'</div>'+
+      '<div class="dph">📞 '+escapeHTML(s.phone||'—')+'</div>'+
     '</div>'+
-    '<button class="btn bd bsm" onclick="delStaff(\''+s.id+'\')">🗑️</button>'+
+    '<button class="btn bd bsm" type="button" data-delete-staff="'+escapeHTML(s.id)+'" aria-label="Delete '+escapeHTML(s.name)+'">🗑️</button>'+
   '</div>').join('');
-};
+  el.querySelectorAll('[data-delete-staff]').forEach(button=>{
+    button.addEventListener('click',()=>window.delStaff(button.dataset.deleteStaff));
+  });
+}
 
 window.saveStaff=async function(){
   const name=document.getElementById('nsname').value.trim();
-  if(!name){ alert('Enter staff name!'); return; }
+  if(!name){ alert('Enter staff name!'); document.getElementById('nsname').focus(); return; }
+  const email=document.getElementById('nsemail').value.trim();
+  const password=document.getElementById('nspassword').value;
+  if(!email||!document.getElementById('nsemail').validity.valid){ alert('Enter a valid staff email address.'); document.getElementById('nsemail').focus(); return; }
+  if(password.length<6){ alert('Temporary password must be at least 6 characters.'); document.getElementById('nspassword').focus(); return; }
   const btn=document.getElementById('savestaffbtn');
   btn.innerHTML='<span class="sp"></span>Saving...'; btn.disabled=true;
   try{
-    await fadd('staff',{
-      name,
+    await createStaffAccount({
+      email,password,name,
       role:document.getElementById('nsrole').value.trim(),
-      phone:document.getElementById('nsphone').value.trim(),
-      ca:new Date().toISOString()
+      phone:document.getElementById('nsphone').value.trim()
     });
+    await refreshMembers();
     closeModal('mstaff');
-    ['nsname','nsrole','nsphone'].forEach(id=>{ document.getElementById(id).value=''; });
-    sync('✅ Staff added!');
-    setTimeout(()=>location.reload(), 1200);
-  }catch(e){ alert('❌ Failed: '+e.message); }
+    ['nsname','nsemail','nspassword','nsrole','nsphone'].forEach(id=>{ document.getElementById(id).value=''; });
+    sync('✅ Staff account and profile added!');
+    alert('Staff account created. Share the email and temporary password with the staff member securely.');
+  }catch(e){ console.error('saveStaff error:',e); alert('❌ Failed to create staff account: '+(e.message||'Unknown error')); }
   finally{ btn.innerHTML='✓ Save Staff'; btn.disabled=false; }
 };
 
 window.delStaff=async function(id){
-  if(!confirm('Delete this staff?')) return;
-  try{ await fdel('staff',id); setTimeout(()=>location.reload(),800); }catch(e){ alert('Failed: '+e.message); }
+  if(!confirm('Delete this staff profile and revoke its app access? The Firebase Authentication account will remain but cannot access clinic data.')) return;
+  try{
+    await revokeMemberAccess(id);
+    await fdel('staff',id);
+    await refreshMembers();
+    sync('✅ Staff profile removed and access revoked.');
+  }catch(e){ console.error('Delete staff failed:',e); alert('Failed: '+e.message); }
 };
+
 </script>
 </body>
 </html>
