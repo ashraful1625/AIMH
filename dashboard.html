@@ -8,6 +8,11 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<div id="page-error" class="card" role="alert" style="display:none;max-width:520px;margin:24px auto;padding:20px">
+  <div class="ct">Dashboard could not load</div>
+  <p id="page-error-message" style="margin:8px 0 14px"></p>
+  <button class="btn bp bsm" onclick="location.reload()">Retry</button>
+</div>
 <div id="app">
   <div class="hdr" id="hdr"></div>
   <div class="nav" id="nav"></div>
@@ -40,36 +45,46 @@
 <script type="module">
 import { loadAll, requireRole, renderHeader, NAV, RXS, PTS, BILLS, INV } from './js/core.js';
 
-const s = await requireRole(['doctor','staff','admin']);
-if(s){
-  await loadAll();
-  renderHeader();
+try{
+  const s = await requireRole(['doctor','staff','admin']);
+  if(s){
+    await loadAll();
+    renderHeader();
 
-  const today = new Date().toISOString().split('T')[0];
-  const lowStock = INV.filter(m => m.stock <= m.reorder).length;
-  const revToday = BILLS.filter(b => b.date === today).reduce((sum,b) => sum + (b.total||0), 0);
+    const today = new Date().toISOString().split('T')[0];
+    const lowStock = INV.filter(m => m.stock <= m.reorder).length;
+    const revToday = BILLS.filter(b => b.date === today).reduce((sum,b) => sum + (b.total||0), 0);
 
-  document.getElementById('drev').textContent  = s.role==='doctor' ? '—' : revToday.toFixed(0);
-  document.getElementById('drx').textContent   = RXS.length;
-  document.getElementById('dpts').textContent  = PTS.length;
-  document.getElementById('dlow').textContent  = lowStock;
+    document.getElementById('drev').textContent  = s.role==='doctor' ? '—' : revToday.toFixed(0);
+    document.getElementById('drx').textContent   = RXS.length;
+    document.getElementById('dpts').textContent  = PTS.length;
+    document.getElementById('dlow').textContent  = lowStock;
 
-  document.getElementById('quick').innerHTML = NAV[s.role]
-    .filter(p => p.href !== 'dashboard.html')
-    .map(p => '<a class="qlink" href="'+p.href+'"><span class="qi">'+p.icon+'</span><span class="qt">'+p.label+'</span></a>')
-    .join('');
+    document.getElementById('quick').innerHTML = NAV[s.role]
+      .filter(p => p.href !== 'dashboard.html')
+      .map(p => '<a class="qlink" href="'+p.href+'"><span class="qi">'+p.icon+'</span><span class="qt">'+p.label+'</span></a>')
+      .join('');
 
-  const el = document.getElementById('recent');
-  if(!RXS.length){ el.innerHTML = '<div class="al ali">No prescriptions yet.</div>'; }
-  else{
-    el.innerHTML = RXS.slice(0,10).map(rx =>
-      '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;align-items:center">'+
-        '<div><div style="font-weight:600">'+rx.patient+'</div>'+
-        '<div style="font-size:11px;color:var(--t3)">'+(rx.rxId||rx.id)+' · '+(rx.dateStr||rx.date)+' · '+(rx.doctorName||'')+'</div></div>'+
-        '<div style="font-weight:600;color:var(--g1)">৳'+(rx.fee||0)+'</div>'+
-      '</div>'
-    ).join('');
+    const el = document.getElementById('recent');
+    if(!RXS.length){ el.innerHTML = '<div class="al ali">No prescriptions yet.</div>'; }
+    else{
+      el.innerHTML = RXS.slice(0,10).map(rx =>
+        '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;align-items:center">'+
+          '<div><div style="font-weight:600">'+rx.patient+'</div>'+
+          '<div style="font-size:11px;color:var(--t3)">'+(rx.rxId||rx.id)+' · '+(rx.dateStr||rx.date)+' · '+(rx.doctorName||'')+'</div></div>'+
+          '<div style="font-weight:600;color:var(--g1)">৳'+(rx.fee||0)+'</div>'+
+        '</div>'
+      ).join('');
+    }
+    document.getElementById('app').classList.add('on');
   }
+}catch(error){
+  console.error('Dashboard startup failed:',error);
+  document.getElementById('page-error-message').textContent=
+    error.code==='permission-denied'
+      ? 'Firestore denied access. Verify your Firebase Authentication account and matching user_roles document.'
+      : 'Could not finish authentication or load clinic data: '+(error.message||'Unknown error');
+  document.getElementById('page-error').style.display='block';
 }
 </script>
 </body>
