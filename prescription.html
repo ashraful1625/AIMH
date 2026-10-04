@@ -50,13 +50,13 @@
         <table class="mt">
           <thead><tr>
             <th style="width:22px">#</th>
-            <th style="min-width:165px;text-align:left;padding-left:7px">Medicine/ওষুধ</th>
+            <th style="min-width:165px;text-align:left;padding-left:7px">ওষুধ এর নাম</th>
             <th style="width:38px">☀️<br><span style="font-size:8px">সকাল</span></th>
             <th style="width:38px">🌤️<br><span style="font-size:8px">দুপুর</span></th>
             <th style="width:38px">🌥️<br><span style="font-size:8px">বিকাল</span></th>
             <th style="width:38px">🌙<br><span style="font-size:8px">রাত</span></th>
-            <th style="width:65px">Food<br><span style="font-size:8px">খাবার</span></th>
-            <th style="width:48px">Days<br><span style="font-size:8px">দিন</span></th>
+            <th style="width:65px">খাবার</th>
+            <th style="width:48px">কতদিন</th>
             <th style="width:26px"></th>
           </tr></thead>
           <tbody id="rxmeds"></tbody>
@@ -79,9 +79,9 @@
     </div>
 
     <div class="brow">
-      <button class="btn bp" id="saverxbtn" onclick="saveRx()">💾 Save & Print</button>
-      <button class="btn bs" onclick="previewRx()">👁️ Preview</button>
-      <button class="btn bd" onclick="clearRx()">🗑️ Clear</button>
+      <button class="btn bp" type="button" id="saverxbtn">💾 Save & Print</button>
+      <button class="btn bs" type="button" id="previewrxbtn">👁️ Preview</button>
+      <button class="btn bd" type="button" id="clearrxbtn">🗑️ Clear</button>
     </div>
   </div>
 </div>
@@ -96,13 +96,6 @@ const CLINIC = {
   address:'Kasba Puratan Bazar, Kasba, Brahmanbaria',
   phone:'01884794060'
 };
-
-const session = await requireRole(['doctor','admin']);
-if(session){
-  await loadAll();
-  renderHeader();
-  initPage();
-}
 
 let medRows=[], curRxId='', medRowSeq=0;
 
@@ -153,10 +146,20 @@ function addMedRow(){
     '<td><div class="dc"><div class="dt" onclick="this.classList.toggle(\'on\');this.textContent=this.classList.contains(\'on\')?\'✓\':\'\'"></div></div></td>'+
     '<td><div class="dc"><div class="dt" onclick="this.classList.toggle(\'on\');this.textContent=this.classList.contains(\'on\')?\'✓\':\'\'"></div></div></td>'+
     '<td><div class="dc"><div class="dt" onclick="this.classList.toggle(\'on\');this.textContent=this.classList.contains(\'on\')?\'✓\':\'\'"></div></div></td>'+
-    '<td><select style="font-size:11px;padding:5px 3px"><option value="after">After</option><option value="before">Before</option></select></td>'+
+    '<td><select style="font-size:11px;padding:5px 3px"><option value="after">পরে</option><option value="before">আগে</option></select></td>'+
     '<td><input type="number" min="1" max="90" placeholder="Days" style="width:44px;font-size:11px;text-align:center;padding:5px 3px"></td>'+
     '<td><button class="rmb" type="button" onclick="remMedRow('+id+')">✕</button></td>';
   document.getElementById('rxmeds').appendChild(tr);
+  tr.querySelector('.mi').addEventListener('keydown',onMedKey);
+  return tr;
+}
+
+function onMedKey(e){
+  if(e.key!=='Enter' || e.isComposing) return;
+  e.preventDefault();
+  if(!e.currentTarget.value.trim()) return;
+  document.querySelectorAll('.mdrop').forEach(d=>d.classList.remove('on'));
+  addMedRow()?.querySelector('.mi')?.focus();
 }
 
 window.remMedRow=function(id){
@@ -339,7 +342,7 @@ function buildPrintRx(rx,qrDataUrl='',isPreview=false){
     '<tr><td class="rx-index">'+(i+1)+'</td>'+
     '<td class="rx-medicine">'+escapeHtml(m.name)+'</td>'+
     check(m.morning)+check(m.noon)+check(m.evening)+check(m.night)+
-    '<td class="rx-food">'+(m.food==='before'?'Before food':'After food')+'</td>'+
+    '<td class="rx-food">'+(m.food==='before'?'আগে':'পরে')+'</td>'+
     '<td class="rx-days">'+(m.days||'—')+'</td></tr>'
   ).join('');
   let nv='';
@@ -383,7 +386,7 @@ function buildPrintRx(rx,qrDataUrl='',isPreview=false){
     '</section>'+
     '<div class="rx-a4-mark">℞</div>'+
     '<table class="rxmt rx-a4-meds">'+
-      '<thead><tr><th class="rx-index">#</th><th class="rx-medicine">Medicine</th><th>Morning</th><th>Noon</th><th>Afternoon</th><th>Night</th><th>With food</th><th>Days</th></tr></thead>'+
+      '<thead><tr><th class="rx-index">#</th><th class="rx-medicine">ওষুধ এর নাম</th><th>সকাল</th><th>দুপুর</th><th>বিকাল</th><th>রাত</th><th>খাবার</th><th>কতদিন</th></tr></thead>'+
       '<tbody>'+(rows||'<tr><td colspan="8" class="rx-a4-empty">No medicines prescribed</td></tr>')+'</tbody>'+
     '</table>'+
     '<footer class="rx-a4-foot">'+
@@ -396,7 +399,6 @@ function buildPrintRx(rx,qrDataUrl='',isPreview=false){
         '<div class="rx-a4-sign-line"></div>'+
         '<div class="rx-a4-label">Signature</div>'+
         '<div class="rx-a4-sign-name">'+escapeHtml(rx.doctorName)+'</div>'+
-        (rx.doctorDeg?'<div class="rx-a4-sign-degree">'+escapeHtml(rx.doctorDeg)+'</div>':'')+
         '<div class="rx-a4-sign-fee">Consultation fee: ৳'+escapeHtml(rx.fee)+'</div>'+
       '</section>'+
     '</footer>'+
@@ -417,11 +419,28 @@ window.clearRx=function(){
 };
 
 function initPage(){
-  document.getElementById('app').classList.add('on');
   document.getElementById('addmedbtn').addEventListener('click',addMedRow);
-  fillDocSel();
+  document.getElementById('saverxbtn').addEventListener('click',window.saveRx);
+  document.getElementById('previewrxbtn').addEventListener('click',window.previewRx);
+  document.getElementById('clearrxbtn').addEventListener('click',window.clearRx);
+  document.getElementById('rxdoc').addEventListener('change',window.updDocInfo);
   addMedRow();
   genRxId();
+}
+
+initPage();
+const session=await requireRole(['doctor','admin']);
+if(session){
+  document.getElementById('app').classList.add('on');
+  try{
+    await loadAll();
+    fillDocSel();
+  }catch(error){
+    console.error('Prescription data could not be loaded:',error);
+    alert('Some prescription data could not be loaded: '+(error.message||error)+
+      '. The form is available, but check the connection before saving.');
+  }
+  renderHeader();
 }
 </script>
 </body>
