@@ -40,7 +40,7 @@
 <script type="module">
 import { loadAll, requireRole, renderHeader, NAV, RXS, PTS, BILLS, INV } from './js/core.js';
 
-const s = requireRole(['doctor','staff','admin']);
+const s = await requireRole(['doctor','staff','admin']);
 if(s){
   await loadAll();
   renderHeader();
@@ -49,7 +49,7 @@ if(s){
   const lowStock = INV.filter(m => m.stock <= m.reorder).length;
   const revToday = BILLS.filter(b => b.date === today).reduce((sum,b) => sum + (b.total||0), 0);
 
-  document.getElementById('drev').textContent  = revToday.toFixed(0);
+  document.getElementById('drev').textContent  = s.role==='doctor' ? '—' : revToday.toFixed(0);
   document.getElementById('drx').textContent   = RXS.length;
   document.getElementById('dpts').textContent  = PTS.length;
   document.getElementById('dlow').textContent  = lowStock;

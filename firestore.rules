@@ -1,0 +1,296 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Assumed models (all timestamps below are legacy ISO strings):
+    // user_roles/{uid}: uid, name, role, optional profileId.
+    // inventory: name, type, company, stock, buy, sell, reorder, ca.
+    // doctors: name, optional deg/spec/phone/days/isFounder/isCoFounder, ca.
+    // staff: name, optional role/phone, ca.
+    // patients: name, phone, age, gender, visits, lastVisit, lastRxId, ca.
+    // prescriptions: rxId, dates, patient/doctor details, vitals, notes, fee,
+    //   meds (bounded list of typed medication maps), savedAt.
+    // bills: rxId, patient/doctor details, dates, total, services, savedAt.
+    // company_bills: name, date, type, bill, adj, pay, sample, ca.
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function roleDoc(uid) {
+      return get(/databases/$(database)/documents/user_roles/$(uid)).data;
+    }
+
+    function hasRole(roles) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/user_roles/$(request.auth.uid))
+        && roleDoc(request.auth.uid).role in roles;
+    }
+
+    function isAdmin() {
+      return hasRole(['admin']);
+    }
+
+    function hasOnlyKeys(data, keys) {
+      return data.keys().hasOnly(keys);
+    }
+
+    function validText(data, key, maxLength) {
+      return data[key] is string && data[key].size() <= maxLength;
+    }
+
+    function validTextValue(value, maxLength) {
+      return value is string && value.size() <= maxLength;
+    }
+
+    function optionalText(data, key, maxLength) {
+      return !(key in data) || validText(data, key, maxLength);
+    }
+
+    function validNumber(data, key, minValue, maxValue) {
+      return data[key] is number && data[key] >= minValue && data[key] <= maxValue;
+    }
+
+    function validInteger(data, key, minValue, maxValue) {
+      return data[key] is int && data[key] >= minValue && data[key] <= maxValue;
+    }
+
+    function validDate(data, key) {
+      return data[key] is string
+        && data[key].size() == 10
+        && data[key].matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    function validTimestampText(data, key) {
+      return data[key] is string && data[key].size() >= 20 && data[key].size() <= 40;
+    }
+
+    function validRoleProfile(data, uid) {
+      return hasOnlyKeys(data, ['uid', 'name', 'role', 'profileId'])
+        && data.keys().hasAll(['uid', 'name', 'role'])
+        && data.uid == uid
+        && validText(data, 'name', 100)
+        && data.name.size() > 0
+        && data.role in ['doctor', 'staff', 'admin']
+        && optionalText(data, 'profileId', 128);
+    }
+
+    function validInventory(data) {
+      return hasOnlyKeys(data, ['name', 'type', 'company', 'stock', 'buy', 'sell', 'reorder', 'ca'])
+        && data.keys().hasAll(['name', 'type', 'company', 'stock', 'buy', 'sell', 'reorder', 'ca'])
+        && validText(data, 'name', 160) && data.name.size() > 0
+        && validText(data, 'type', 50)
+        && validText(data, 'company', 120)
+        && validInteger(data, 'stock', 0, 10000000)
+        && validNumber(data, 'buy', 0, 10000000)
+        && validNumber(data, 'sell', 0, 10000000)
+        && validInteger(data, 'reorder', 0, 10000000)
+        && validTimestampText(data, 'ca');
+    }
+
+    function validDoctor(data) {
+      return hasOnlyKeys(data, ['name', 'deg', 'spec', 'phone', 'days', 'isFounder', 'isCoFounder', 'ca'])
+        && data.keys().hasAll(['name', 'ca'])
+        && validText(data, 'name', 100) && data.name.size() > 0
+        && optionalText(data, 'deg', 160)
+        && optionalText(data, 'spec', 160)
+        && optionalText(data, 'phone', 30)
+        && optionalText(data, 'days', 100)
+        && (!('isFounder' in data) || data.isFounder is bool)
+        && (!('isCoFounder' in data) || data.isCoFounder is bool)
+        && validTimestampText(data, 'ca');
+    }
+
+    function validStaff(data) {
+      return hasOnlyKeys(data, ['name', 'role', 'phone', 'ca'])
+        && data.keys().hasAll(['name', 'ca'])
+        && validText(data, 'name', 100) && data.name.size() > 0
+        && optionalText(data, 'role', 100)
+        && optionalText(data, 'phone', 30)
+        && validTimestampText(data, 'ca');
+    }
+
+    function validPatient(data) {
+      return hasOnlyKeys(data, ['name', 'phone', 'age', 'gender', 'visits', 'lastVisit', 'lastRxId', 'ca'])
+        && data.keys().hasAll(['name', 'phone', 'age', 'gender', 'visits', 'lastVisit', 'lastRxId', 'ca'])
+        && validText(data, 'name', 120) && data.name.size() > 0
+        && validText(data, 'phone', 30)
+        && validText(data, 'age', 30)
+        && validText(data, 'gender', 30)
+        && validInteger(data, 'visits', 1, 10000000)
+        && validDate(data, 'lastVisit')
+        && validText(data, 'lastRxId', 40)
+        && validTimestampText(data, 'ca');
+    }
+
+    function validMed(med) {
+      return med is map
+        && hasOnlyKeys(med, ['name', 'morning', 'noon', 'evening', 'night', 'food', 'days', 'unitPrice', 'type'])
+        && med.keys().hasAll(['name', 'morning', 'noon', 'evening', 'night', 'food', 'days', 'unitPrice', 'type'])
+        && validText(med, 'name', 160) && med.name.size() > 0
+        && med.morning is bool && med.noon is bool && med.evening is bool && med.night is bool
+        && med.food in ['before', 'after']
+        && validInteger(med, 'days', 0, 10000)
+        && validNumber(med, 'unitPrice', 0, 10000000)
+        && validText(med, 'type', 50);
+    }
+
+    function validMeds(meds) {
+      return meds is list && meds.size() <= 20
+        && (meds.size() < 1 || validMed(meds[0]))
+        && (meds.size() < 2 || validMed(meds[1]))
+        && (meds.size() < 3 || validMed(meds[2]))
+        && (meds.size() < 4 || validMed(meds[3]))
+        && (meds.size() < 5 || validMed(meds[4]))
+        && (meds.size() < 6 || validMed(meds[5]))
+        && (meds.size() < 7 || validMed(meds[6]))
+        && (meds.size() < 8 || validMed(meds[7]))
+        && (meds.size() < 9 || validMed(meds[8]))
+        && (meds.size() < 10 || validMed(meds[9]))
+        && (meds.size() < 11 || validMed(meds[10]))
+        && (meds.size() < 12 || validMed(meds[11]))
+        && (meds.size() < 13 || validMed(meds[12]))
+        && (meds.size() < 14 || validMed(meds[13]))
+        && (meds.size() < 15 || validMed(meds[14]))
+        && (meds.size() < 16 || validMed(meds[15]))
+        && (meds.size() < 17 || validMed(meds[16]))
+        && (meds.size() < 18 || validMed(meds[17]))
+        && (meds.size() < 19 || validMed(meds[18]))
+        && (meds.size() < 20 || validMed(meds[19]));
+    }
+
+    function validPrescription(data) {
+      return hasOnlyKeys(data, [
+          'rxId', 'date', 'dateStr', 'patient', 'phone', 'age', 'gender', 'bp', 'weight',
+          'fever', 'temp', 'complaint', 'advice', 'nextVisit', 'fee', 'doctorId',
+          'doctorName', 'doctorDeg', 'doctorSpec', 'doctorPhone', 'meds', 'savedAt'
+        ])
+        && data.keys().hasAll([
+          'rxId', 'date', 'dateStr', 'patient', 'phone', 'age', 'gender', 'bp', 'weight',
+          'fever', 'temp', 'complaint', 'advice', 'nextVisit', 'fee', 'doctorId',
+          'doctorName', 'doctorDeg', 'doctorSpec', 'doctorPhone', 'meds', 'savedAt'
+        ])
+        && validText(data, 'rxId', 40) && data.rxId.size() > 0
+        && validDate(data, 'date')
+        && validText(data, 'dateStr', 40)
+        && validText(data, 'patient', 120) && data.patient.size() > 0
+        && validText(data, 'phone', 30)
+        && validText(data, 'age', 30)
+        && validText(data, 'gender', 30)
+        && validText(data, 'bp', 40)
+        && validText(data, 'weight', 40)
+        && validText(data, 'fever', 40)
+        && validText(data, 'temp', 40)
+        && validText(data, 'complaint', 2000)
+        && validText(data, 'advice', 2000)
+        && validText(data, 'nextVisit', 40)
+        && validNumber(data, 'fee', 0, 10000000)
+        && validText(data, 'doctorId', 128)
+        && validText(data, 'doctorName', 100)
+        && validText(data, 'doctorDeg', 160)
+        && validText(data, 'doctorSpec', 160)
+        && validText(data, 'doctorPhone', 30)
+        && validMeds(data.meds)
+        && validTimestampText(data, 'savedAt');
+    }
+
+    function validBill(data) {
+      return hasOnlyKeys(data, ['rxId', 'patient', 'doctorName', 'date', 'dateStr', 'total', 'services', 'savedAt'])
+        && data.keys().hasAll(['rxId', 'patient', 'doctorName', 'date', 'dateStr', 'total', 'services', 'savedAt'])
+        && validText(data, 'rxId', 40)
+        && validText(data, 'patient', 120)
+        && validText(data, 'doctorName', 100)
+        && validDate(data, 'date')
+        && validText(data, 'dateStr', 40)
+        && validNumber(data, 'total', 0, 100000000)
+        && data.services is list && data.services.size() <= 10
+        && (data.services.size() < 1 || validTextValue(data.services[0], 100))
+        && (data.services.size() < 2 || validTextValue(data.services[1], 100))
+        && (data.services.size() < 3 || validTextValue(data.services[2], 100))
+        && (data.services.size() < 4 || validTextValue(data.services[3], 100))
+        && (data.services.size() < 5 || validTextValue(data.services[4], 100))
+        && (data.services.size() < 6 || validTextValue(data.services[5], 100))
+        && (data.services.size() < 7 || validTextValue(data.services[6], 100))
+        && (data.services.size() < 8 || validTextValue(data.services[7], 100))
+        && (data.services.size() < 9 || validTextValue(data.services[8], 100))
+        && (data.services.size() < 10 || validTextValue(data.services[9], 100))
+        && validTimestampText(data, 'savedAt');
+    }
+
+    function validCompanyBill(data) {
+      return hasOnlyKeys(data, ['name', 'date', 'type', 'bill', 'adj', 'pay', 'sample', 'ca'])
+        && data.keys().hasAll(['name', 'date', 'type', 'bill', 'adj', 'pay', 'sample', 'ca'])
+        && validText(data, 'name', 120) && data.name.size() > 0
+        && (data.date == '' || validDate(data, 'date'))
+        && data.type in ['Cash', 'Credit']
+        && validNumber(data, 'bill', 0, 100000000)
+        && validNumber(data, 'adj', 0, 100000000)
+        && validNumber(data, 'pay', 0, 100000000)
+        && validInteger(data, 'sample', 0, 10000000)
+        && validTimestampText(data, 'ca');
+    }
+
+    // Role assignments are private to their owner and administrators. Only an
+    // existing administrator can change roles; users cannot grant themselves access.
+    match /user_roles/{uid} {
+      allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow list: if isAdmin();
+      allow create, update: if isAdmin() && validRoleProfile(request.resource.data, uid);
+      allow delete: if isAdmin();
+    }
+
+    match /inventory/{itemId} {
+      allow read: if hasRole(['doctor', 'staff', 'admin']);
+      allow create: if isAdmin() && validInventory(request.resource.data);
+      allow delete: if isAdmin();
+      allow update: if isAdmin() && validInventory(request.resource.data)
+          && request.resource.data.ca == resource.data.ca
+        || (hasRole(['staff']) && validInventory(request.resource.data)
+          && request.resource.data.ca == resource.data.ca
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock']));
+    }
+
+    match /doctors/{doctorId} {
+      allow read: if hasRole(['doctor', 'staff', 'admin']);
+      allow create: if isAdmin() && validDoctor(request.resource.data);
+      allow update: if isAdmin() && validDoctor(request.resource.data)
+        && request.resource.data.ca == resource.data.ca;
+      allow delete: if isAdmin();
+    }
+
+    match /staff/{staffId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && validStaff(request.resource.data);
+      allow update: if isAdmin() && validStaff(request.resource.data)
+        && request.resource.data.ca == resource.data.ca;
+      allow delete: if isAdmin();
+    }
+
+    match /patients/{patientId} {
+      allow read: if hasRole(['doctor', 'staff', 'admin']);
+      allow create: if hasRole(['doctor', 'admin']) && validPatient(request.resource.data);
+      allow update: if hasRole(['doctor', 'admin']) && validPatient(request.resource.data)
+        && request.resource.data.ca == resource.data.ca;
+    }
+
+    match /prescriptions/{prescriptionId} {
+      allow read: if hasRole(['doctor', 'staff', 'admin']);
+      allow create: if hasRole(['doctor', 'admin'])
+        && validPrescription(request.resource.data)
+        && request.resource.data.rxId == prescriptionId;
+      allow update: if hasRole(['doctor', 'admin'])
+        && validPrescription(request.resource.data)
+        && request.resource.data.rxId == prescriptionId
+        && request.resource.data.savedAt == resource.data.savedAt;
+    }
+
+    match /bills/{billId} {
+      allow read: if hasRole(['staff', 'admin']);
+      allow create: if hasRole(['staff', 'admin']) && validBill(request.resource.data);
+    }
+
+    match /company_bills/{billId} {
+      allow read: if hasRole(['staff', 'admin']);
+      allow create: if hasRole(['staff', 'admin']) && validCompanyBill(request.resource.data);
+      allow delete: if hasRole(['staff', 'admin']);
+    }
+  }
+}

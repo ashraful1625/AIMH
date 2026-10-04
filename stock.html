@@ -50,7 +50,7 @@
 <script type="module">
 import { loadAll, requireRole, renderHeader, getSession, openModal, closeModal, sync, fadd, fupd, INV } from './js/core.js';
 
-const session = requireRole(['doctor','staff','admin']);
+const session = await requireRole(['doctor','staff','admin']);
 let isAdmin=false;
 if(session){
   await loadAll();

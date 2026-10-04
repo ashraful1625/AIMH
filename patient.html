@@ -28,7 +28,7 @@
 <script type="module">
 import { loadAll, requireRole, renderHeader, PTS } from './js/core.js';
 
-const session = requireRole(['staff','admin']);
+const session = await requireRole(['staff','admin']);
 if(session){
   await loadAll();
   renderHeader();
@@ -45,7 +45,7 @@ window.renderPts=function(){
   const el=document.getElementById('ptlist');
   if(!f.length){ el.innerHTML='<div class="al ali">ℹ️ No patients found.</div>'; return; }
   el.innerHTML=f.map(p=>{
-    const lastRxId=p.rxIds&&p.rxIds.length?p.rxIds[p.rxIds.length-1]:'';
+    const lastRxId=p.lastRxId||'';
     return '<div class="pi" '+(lastRxId?'onclick="goToBilling(\''+lastRxId+'\')" style="cursor:pointer"':'')+'>'+
       '<div class="pav">'+(p.name||'?').charAt(0).toUpperCase()+'</div>'+
       '<div class="pinfo"><div class="pname">'+(p.name||'—')+'</div>'+

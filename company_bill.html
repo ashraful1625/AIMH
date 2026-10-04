@@ -46,7 +46,7 @@
 <script type="module">
 import { loadAll, requireRole, renderHeader, openModal, closeModal, sync, fadd, fdel, COMPS } from './js/core.js';
 
-const session = requireRole(['staff','admin']);
+const session = await requireRole(['staff','admin']);
 if(session){
   await loadAll();
   renderHeader();

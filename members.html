@@ -40,7 +40,6 @@
       <div class="fg full"><label>Qualifications</label><input type="text" id="nddeg" placeholder="MBBS, BDS..."></div>
       <div class="fg"><label>Speciality</label><input type="text" id="ndspec" placeholder="Skin, General..."></div>
       <div class="fg"><label>Phone</label><input type="tel" id="ndphone" placeholder="01XXXXXXXXX"></div>
-      <div class="fg full"><label>Doctor's Login Password <span class="lbn">ডাক্তারের পাসওয়ার্ড</span></label><input type="text" id="ndpass" placeholder="Password to login as this doctor"></div>
       <div class="fg full"><label>Chamber Days/Time</label><input type="text" id="nddays" placeholder="e.g. Sat-Thu 5pm-9pm"></div>
     </div>
     <div class="brow">
@@ -59,7 +58,6 @@
       <div class="fg full"><label>Full Name</label><input type="text" id="nsname" placeholder="Name..."></div>
       <div class="fg"><label>Role/Designation</label><input type="text" id="nsrole" placeholder="Manager, Nurse..."></div>
       <div class="fg"><label>Phone</label><input type="tel" id="nsphone" placeholder="01XXXXXXXXX"></div>
-      <div class="fg full"><label>Staff's Login Password</label><input type="text" id="nspass" placeholder="Password for this staff"></div>
     </div>
     <div class="brow">
       <button class="btn bp" id="savestaffbtn" onclick="saveStaff()">✓ Save Staff</button>
@@ -72,7 +70,7 @@
 <script type="module">
 import { loadAll, requireRole, renderHeader, openModal, closeModal, sync, fadd, fdel, DOCS, STAFF } from './js/core.js';
 
-const session = requireRole(['admin']);
+const session = await requireRole(['admin']);
 if(session){
   await loadAll();
   renderHeader();
@@ -115,12 +113,11 @@ window.saveDoc=async function(){
       deg:document.getElementById('nddeg').value.trim(),
       spec:document.getElementById('ndspec').value.trim(),
       phone:document.getElementById('ndphone').value.trim(),
-      pass:document.getElementById('ndpass').value.trim(),
       days:document.getElementById('nddays').value.trim(),
       ca:new Date().toISOString()
     });
     closeModal('mdoc');
-    ['ndname','nddeg','ndspec','ndphone','ndpass','nddays'].forEach(id=>{ document.getElementById(id).value=''; });
+    ['ndname','nddeg','ndspec','ndphone','nddays'].forEach(id=>{ document.getElementById(id).value=''; });
     sync('✅ Doctor added!');
     setTimeout(()=>location.reload(), 1200);
   }catch(e){ console.error('saveDoc error:',e); alert('❌ Failed to save doctor: '+e.message); }
@@ -156,11 +153,10 @@ window.saveStaff=async function(){
       name,
       role:document.getElementById('nsrole').value.trim(),
       phone:document.getElementById('nsphone').value.trim(),
-      pass:document.getElementById('nspass').value.trim(),
       ca:new Date().toISOString()
     });
     closeModal('mstaff');
-    ['nsname','nsrole','nsphone','nspass'].forEach(id=>{ document.getElementById(id).value=''; });
+    ['nsname','nsrole','nsphone'].forEach(id=>{ document.getElementById(id).value=''; });
     sync('✅ Staff added!');
     setTimeout(()=>location.reload(), 1200);
   }catch(e){ alert('❌ Failed: '+e.message); }

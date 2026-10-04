@@ -92,7 +92,7 @@
 <script type="module">
 import { loadAll, requireRole, renderHeader, getSession, openModal, closeModal, printHTML, sync, fadd, fset, fupd, INV, PTS, DOCS } from './js/core.js';
 
-const session = requireRole(['doctor','admin']);
+const session = await requireRole(['doctor','admin']);
 if(session){
   await loadAll();
   renderHeader();
@@ -243,9 +243,9 @@ window.saveRx=async function(){
     await fset('prescriptions',rx.rxId,{...rx,savedAt:new Date().toISOString()});
     const ex=PTS.find(p=>p.phone===rx.phone && rx.phone!=='+8801');
     if(!ex){
-      await fadd('patients',{name:rx.patient,phone:rx.phone,age:rx.age,gender:rx.gender,visits:1,lastVisit:rx.date,rxIds:[rx.rxId],ca:new Date().toISOString()});
+      await fadd('patients',{name:rx.patient,phone:rx.phone,age:rx.age,gender:rx.gender,visits:1,lastVisit:rx.date,lastRxId:rx.rxId,ca:new Date().toISOString()});
     }else{
-      await fupd('patients',ex.id,{visits:(ex.visits||0)+1,lastVisit:rx.date,rxIds:[...(ex.rxIds||[]),rx.rxId],name:rx.patient,age:rx.age});
+      await fupd('patients',ex.id,{visits:(ex.visits||0)+1,lastVisit:rx.date,lastRxId:rx.rxId,name:rx.patient,age:rx.age});
     }
     sync('✅ Saved!');
     printHTML(buildPrintRx(rx), false);

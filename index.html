@@ -26,85 +26,54 @@
       <div class="cn">A Islam Medical Hall</div>
       <div class="ca bn">কাসবা পুরাতন বাজার, কাসবা, ব্রাহ্মণবাড়িয়া</div>
     </div>
-    <div class="rtabs">
-      <button class="rtab on" id="rtab-doctor" onclick="selRole('doctor')"><span class="ri">👨‍⚕️</span>Doctor<br><span class="bn" style="font-size:9px">ডাক্তার</span></button>
-      <button class="rtab" id="rtab-staff" onclick="selRole('staff')"><span class="ri">🧑‍💼</span>Staff<br><span class="bn" style="font-size:9px">কর্মচারী</span></button>
-      <button class="rtab" id="rtab-admin" onclick="selRole('admin')"><span class="ri">🔐</span>Admin<br><span class="bn" style="font-size:9px">অ্যাডমিন</span></button>
-    </div>
-    <div class="lf" id="lprofile-sec" style="display:none">
-      <label id="lprofile-lbl">Select Profile</label>
-      <select id="lprofile" style="margin-top:5px"></select>
+    <div class="lf">
+      <label for="lemail">Email / ইমেইল</label>
+      <input type="email" id="lemail" placeholder="name@example.com" autocomplete="username" required>
     </div>
     <div class="lf">
-      <label>Password / পাসওয়ার্ড</label>
-      <input type="password" id="lpass" placeholder="Enter password...">
+      <label for="lpass">Password / পাসওয়ার্ড</label>
+      <input type="password" id="lpass" placeholder="Enter password..." autocomplete="current-password" required>
     </div>
-    <button class="lbtn" onclick="doLogin()">Login / প্রবেশ করুন</button>
-    <div class="lerr" id="lerr">❌ Wrong password / ভুল পাসওয়ার্ড</div>
+    <button class="lbtn" id="loginbtn" onclick="doLogin()">Login / প্রবেশ করুন</button>
+    <div class="lerr" id="lerr" role="alert"></div>
   </div>
-  <div style="color:rgba(255,255,255,0.35);font-size:10px;margin-top:8px;text-align:center">Admin: admin123 · Staff: 5678</div>
 </div>
 
 <script type="module">
-import { loadAll, getSession, setSession, SYS_PASS, DOCS, STAFF } from './js/core.js';
+import { restoreSession, signIn } from './js/core.js';
 
-// Already logged in? Go straight to dashboard.
-if(getSession()) location.replace('dashboard.html');
-
-let sel='doctor';
-
-window.selRole=function(r){
-  sel=r;
-  ['doctor','staff','admin'].forEach(x=>document.getElementById('rtab-'+x).classList.toggle('on',x===r));
-  document.getElementById('lpass').value='';
-  document.getElementById('lerr').style.display='none';
-  const psec=document.getElementById('lprofile-sec');
-  const psel=document.getElementById('lprofile');
-  if(r==='admin'){ psec.style.display='none'; return; }
-  psec.style.display='block';
-  document.getElementById('lprofile-lbl').textContent = r==='doctor' ? 'Select Doctor' : 'Select Staff';
-  const list = r==='doctor' ? DOCS : STAFF;
-  psel.innerHTML = list.map(m=>'<option value="'+m.id+'">'+m.name+'</option>').join('')
-    || '<option value="">No '+r+' found</option>';
-};
-
-window.doLogin=function(){
-  const pass=document.getElementById('lpass').value.trim();
+window.doLogin=async function(){
+  const email=document.getElementById('lemail').value.trim();
+  const pass=document.getElementById('lpass').value;
   const err=document.getElementById('lerr');
-  let s=null;
-  if(sel==='admin'){
-    if(pass===SYS_PASS.admin) s={role:'admin',myDocId:'',name:'Admin'};
-  }else if(sel==='doctor'){
-    const d=DOCS.find(x=>x.id===document.getElementById('lprofile').value);
-    if(d && (d.pass===pass || (d.isFounder && pass==='1234'))) s={role:'doctor',myDocId:d.id,name:d.name};
-  }else{
-    const st=STAFF.find(x=>x.id===document.getElementById('lprofile').value);
-    if(st && (st.pass===pass || pass===SYS_PASS.staff)) s={role:'staff',myDocId:st.id,name:st.name};
+  const btn=document.getElementById('loginbtn');
+  err.style.display='none';
+  btn.disabled=true;
+  try{
+    await signIn(email,pass);
+    location.replace('dashboard.html');
+  }catch(e){
+    console.error('Login failed:',e);
+    const messages={
+      'auth/invalid-credential':'Email or password is incorrect.',
+      'auth/invalid-email':'Enter a valid email address.',
+      'auth/operation-not-allowed':'Email/password sign-in is not enabled for this Firebase project.',
+      'auth/network-request-failed':'Could not reach Firebase Authentication. Check your connection.',
+      'permission-denied':'Could not read your clinic role. Ask an administrator to verify your account access.'
+    };
+    err.textContent='❌ '+(messages[e.code]||e.message||'Login failed.');
+    err.style.display='flex';
+  }finally{
+    btn.disabled=false;
   }
-  if(s){ setSession(s); location.href='dashboard.html'; }
-  else{ err.style.display='flex'; document.getElementById('lpass').value=''; }
 };
 
 document.getElementById('lpass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
-
-(async function boot(){
-  const t=setTimeout(()=>{
-    document.getElementById('ov').querySelector('.lc').style.display='none';
-    document.getElementById('oerr').classList.add('show');
-  },8000);
-  try{
-    await loadAll();
-    clearTimeout(t);
-    document.getElementById('ov').classList.add('hide');
-    document.getElementById('login').classList.add('on');
-    selRole('doctor');
-  }catch(e){
-    clearTimeout(t);
-    document.getElementById('ov').querySelector('.lc').style.display='none';
-    document.getElementById('oerr-msg').textContent='Connection failed: '+e.message;
-    document.getElementById('oerr').classList.add('show');
-  }
-})();
+document.getElementById('ov').classList.add('hide');
+document.getElementById('login').classList.add('on');
+restoreSession().then(session=>{
+  if(session) location.replace('dashboard.html');
+});
 </script>
 </body>
 </html>
