@@ -16,8 +16,16 @@
     <div class="card">
       <div class="ct">🔍 Load Prescription <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">প্রেসক্রিপশন লোড</span></div>
       <div class="uid">
-        <input type="text" id="billuid" placeholder="Patient ID e.g. P12345678" maxlength="9" oninput="this.value=this.value.toUpperCase()">
-        <button class="btn bp" id="loadbtn" onclick="loadRx()">🔍 Load</button>
+        <input type="text" id="billuid" placeholder="Prescription number or scan its QR code" maxlength="40" oninput="this.value=this.value.toUpperCase()">
+        <button class="btn bp" type="button" id="loadbtn" onclick="loadRx()">🔍 Load</button>
+        <button class="btn bs" type="button" id="scanrxbtn" onclick="startRxScan()">📷 Scan QR</button>
+      </div>
+      <div id="rxscanner" class="rxscanner" hidden>
+        <video id="rxscanvideo" playsinline muted></video>
+        <div class="rxscanner-actions">
+          <span id="rxscanstatus">Point the camera at a prescription QR code.</span>
+          <button class="btn bd bsm" type="button" onclick="stopRxScan()">Stop camera</button>
+        </div>
       </div>
       <div id="billrx"></div>
     </div>
@@ -66,12 +74,13 @@ if(session){
   await loadAll();
   renderHeader();
   document.getElementById('app').classList.add('on');
-  // Auto-load if arriving from patient page (?rx=PXXXXXXXX)
+  // Auto-load if arriving from the patient page with a prescription number.
   const pre=new URLSearchParams(location.search).get('rx');
   if(pre){ document.getElementById('billuid').value=pre; loadRx(); }
 }
 
 let curRx=null, svcOn={bp:false,dm:false,inj:false,sal:false,dr:false,oth:false};
+let qrCameraStream=null, qrScanFrame=0, qrScanGeneration=0;
 
 window.togSvc=function(s){
   svcOn[s]=!svcOn[s];
@@ -80,9 +89,10 @@ window.togSvc=function(s){
   calcTotal();
 };
 
-window.loadRx=async function(){
-  const uid=document.getElementById('billuid').value.trim().toUpperCase();
-  if(!uid){ alert('Enter Patient ID'); return; }
+window.loadRx=async function(qrPayload=null){
+  const uid=(qrPayload?.rxId||document.getElementById('billuid').value).trim().toUpperCase();
+  if(!uid){ alert('Enter a prescription number or scan its QR code.'); return; }
+  document.getElementById('billuid').value=uid;
   const btn=document.getElementById('loadbtn');
   btn.innerHTML='<span class="sp"></span>'; btn.disabled=true;
   try{
@@ -92,6 +102,9 @@ window.loadRx=async function(){
       return;
     }
     curRx={id:snap.id,...snap.data()};
+    if(qrPayload && !qrMedsMatch(qrPayload.meds,curRx.meds||[])){
+      console.warn('Scanned medicine details differ from the saved prescription; billing uses the saved Firestore prescription.');
+    }
     document.getElementById('billrx').innerHTML='<div class="rxsum">'+
       '<div style="font-weight:700;font-size:13px;color:var(--g1);margin-bottom:5px;display:flex;justify-content:space-between">'+
         '<span>📋 '+curRx.patient+'</span><span style="font-size:11px;color:var(--t3)">'+(curRx.dateStr||curRx.date)+'</span></div>'+
@@ -104,6 +117,87 @@ window.loadRx=async function(){
     calcTotal();
   }catch(e){ console.error(e); alert('❌ Error: '+e.message); }
   finally{ btn.innerHTML='🔍 Load'; btn.disabled=false; }
+};
+
+function parsePrescriptionQr(text){
+  let payload;
+  try{ payload=JSON.parse(text); }
+  catch{ throw new Error('This QR code is not a prescription QR code.'); }
+  if(!payload || payload.v!==1 || typeof payload.rxId!=='string' ||
+    !/^(?:\d{16,40}|P\d{1,40})$/.test(payload.rxId) ||
+    !Array.isArray(payload.meds) || payload.meds.length>20 ||
+    !payload.meds.every(m=>Array.isArray(m) && m.length===4 &&
+      typeof m[0]==='string' && Number.isInteger(m[1]) && m[1]>=0 && m[1]<=15 &&
+      (m[2]===0||m[2]===1) && Number.isInteger(m[3]) && m[3]>=0)){
+    throw new Error('The QR code does not contain valid prescription details.');
+  }
+  return payload;
+}
+
+function qrMedsMatch(qrMeds,savedMeds){
+  return qrMeds.length===savedMeds.length && qrMeds.every((med,index)=>{
+    const saved=savedMeds[index];
+    const schedule=(saved.morning?1:0)|(saved.noon?2:0)|(saved.evening?4:0)|(saved.night?8:0);
+    return med[0]===saved.name && med[1]===schedule &&
+      med[2]===(saved.food==='before'?1:0) && med[3]===saved.days;
+  });
+}
+
+window.startRxScan=async function(){
+  if(!navigator.mediaDevices?.getUserMedia){
+    alert('Camera scanning is unavailable in this browser. Enter the prescription number manually.');
+    return;
+  }
+  if(!('BarcodeDetector' in window)){
+    alert('QR camera scanning is not supported by this browser. Open billing in Chrome or Edge, or enter the prescription number manually.');
+    return;
+  }
+  try{
+    const detector=new BarcodeDetector({formats:['qr_code']});
+    qrCameraStream=await navigator.mediaDevices.getUserMedia({
+      audio:false,video:{facingMode:{ideal:'environment'}}
+    });
+    const video=document.getElementById('rxscanvideo');
+    video.srcObject=qrCameraStream;
+    await video.play();
+    document.getElementById('rxscanner').hidden=false;
+    const generation=++qrScanGeneration;
+    const scan=async()=>{
+      if(generation!==qrScanGeneration) return;
+      try{
+        const codes=await detector.detect(video);
+        if(codes.length){
+          const payload=parsePrescriptionQr(codes[0].rawValue);
+          stopRxScan();
+          await loadRx(payload);
+          return;
+        }
+      }catch(error){
+        stopRxScan();
+        console.error('Prescription QR scan failed:',error);
+        alert('❌ QR scan failed: '+error.message);
+        return;
+      }
+      qrScanFrame=requestAnimationFrame(scan);
+    };
+    qrScanFrame=requestAnimationFrame(scan);
+  }catch(error){
+    stopRxScan();
+    console.error('Could not start the prescription QR scanner:',error);
+    alert('❌ Could not start the camera: '+error.message);
+  }
+};
+
+window.stopRxScan=function(){
+  qrScanGeneration++;
+  if(qrScanFrame) cancelAnimationFrame(qrScanFrame);
+  qrScanFrame=0;
+  if(qrCameraStream) qrCameraStream.getTracks().forEach(track=>track.stop());
+  qrCameraStream=null;
+  const video=document.getElementById('rxscanvideo');
+  if(video) video.srcObject=null;
+  const scanner=document.getElementById('rxscanner');
+  if(scanner) scanner.hidden=true;
 };
 
 const COURSES=[{l:'3D',d:3},{l:'5D',d:5},{l:'7D',d:7},{l:'10D',d:10},{l:'15D',d:15},{l:'30D',d:30},{l:'Full',d:null}];
@@ -288,6 +382,7 @@ window.saveBill=async function(){
 };
 
 window.clearBill=function(){
+  stopRxScan();
   curRx=null; svcOn={bp:false,dm:false,inj:false,sal:false,dr:false,oth:false};
   ['sbp','sdm','sinj','ssal','sdr','soth'].forEach(id=>{ const e=document.getElementById(id); if(e){ e.classList.remove('on'); e.textContent=''; } });
   document.getElementById('billuid').value='';

@@ -107,27 +107,17 @@ if(session){
 let medRows=[], curRxId='', medRowSeq=0;
 
 function genRxId(){
-  const digits=[];
-  while(digits.length<32){
-    const bytes=new Uint8Array(64);
-    crypto.getRandomValues(bytes);
-    for(const byte of bytes){
-      if(digits.length===0){
-        if(byte<252) digits.push(byte%9+1);
-      }else if(byte<250){
-        digits.push(byte%10);
-      }
-      if(digits.length===32) break;
-    }
-  }
-  curRxId=digits.join('');
+  const digits=new Uint8Array(16);
+  crypto.getRandomValues(digits);
+  curRxId=String(digits[0]%9+1);
+  for(let i=1;i<digits.length;i++) curRxId+=String(digits[i]%10);
   document.getElementById('rxid').textContent='· '+curRxId;
 }
 
 function fillDocSel(){
   const sel=document.getElementById('rxdoc');
   sel.replaceChildren(new Option('— Select Doctor —',''));
-  DOCS.filter(d=>!d.isCoFounder).forEach(d=>{
+  DOCS.forEach(d=>{
     sel.add(new Option(d.name+(d.spec?' ('+d.spec+')':''),d.id));
   });
   if(session.role==='doctor'){ sel.value=session.myDocId; sel.disabled=true; }
@@ -141,6 +131,10 @@ window.updDocInfo=function(){
 };
 
 function addMedRow(){
+  if(medRows.length>=20){
+    alert('A prescription can contain up to 20 medicines.');
+    return;
+  }
   const id=++medRowSeq;
   medRows.push(id);
   const tr=document.createElement('tr');
@@ -279,13 +273,12 @@ window.saveRx=async function(){
   btn.innerHTML='<span class="sp"></span>Saving...'; btn.disabled=true;
   try{
     let created=false, qrDataUrl='';
-    for(let attempt=0;attempt<5 && !created;attempt++){
+    while(!created){
       rx.rxId=curRxId;
-      qrDataUrl=await makeQrDataUrl(rx.rxId);
+      qrDataUrl=await makeQrDataUrl(rx);
       created=await fcreate('prescriptions',rx.rxId,{...rx,savedAt:new Date().toISOString()});
       if(!created) genRxId();
     }
-    if(!created) throw new Error('Could not allocate a unique prescription number. Please try again.');
     let patientError=null;
     try{
       const ex=PTS.find(p=>p.phone===rx.phone && rx.phone!=='+8801');
@@ -309,10 +302,20 @@ window.saveRx=async function(){
 };
 
 let qrCodeModulePromise;
-async function makeQrDataUrl(rxId){
+async function makeQrDataUrl(rx){
   qrCodeModulePromise ||= import('https://esm.sh/qrcode@1.5.4');
   const QRCode=await qrCodeModulePromise;
-  return QRCode.toDataURL(rxId,{errorCorrectionLevel:'M',margin:1,width:112});
+  const qrPayload=JSON.stringify({
+    v:1,
+    rxId:rx.rxId,
+    meds:rx.meds.map(m=>[
+      m.name,
+      (m.morning?1:0)|(m.noon?2:0)|(m.evening?4:0)|(m.night?8:0),
+      m.food==='before'?1:0,
+      m.days
+    ])
+  });
+  return QRCode.toDataURL(qrPayload,{errorCorrectionLevel:'M',margin:1,width:360});
 }
 
 window.previewRx=async function(){
@@ -331,61 +334,72 @@ function escapeHtml(value){
 }
 
 function buildPrintRx(rx,qrDataUrl='',isPreview=false){
-  const dc=v=>'<td style="text-align:center;color:'+(v?'#1a5c3a':'#ddd')+';font-weight:700;font-size:13px">'+(v?'✓':'—')+'</td>';
+  const check=v=>'<td class="rx-check">'+(v?'✓':'')+'</td>';
   const rows=rx.meds.map((m,i)=>
-    '<tr><td style="text-align:center;color:#999;font-size:10px">'+(i+1)+'</td>'+
-    '<td style="font-weight:600;padding:6px 8px">'+escapeHtml(m.name)+'</td>'+
-    dc(m.morning)+dc(m.noon)+dc(m.evening)+dc(m.night)+
-    '<td style="text-align:center;font-size:10px">'+(m.food==='before'?'Before':'After')+'</td>'+
-    '<td style="text-align:center;font-weight:600">'+(m.days||'—')+'</td></tr>'
+    '<tr><td class="rx-index">'+(i+1)+'</td>'+
+    '<td class="rx-medicine">'+escapeHtml(m.name)+'</td>'+
+    check(m.morning)+check(m.noon)+check(m.evening)+check(m.night)+
+    '<td class="rx-food">'+(m.food==='before'?'Before food':'After food')+'</td>'+
+    '<td class="rx-days">'+(m.days||'—')+'</td></tr>'
   ).join('');
   let nv='';
   if(rx.nextVisit){
     const d=new Date(rx.date); d.setDate(d.getDate()+parseInt(rx.nextVisit));
-    nv='After '+escapeHtml(rx.nextVisit)+' days ('+d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+')';
+    nv=escapeHtml(rx.nextVisit)+' days'+
+      ' <span class="rx-next-date">'+d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+'</span>';
   }
-  return '<article class="rxp">'+
-    '<header class="rxph">'+
-      '<section class="rxdoctor">'+
-        '<div class="rxdn">'+escapeHtml(rx.doctorName)+'</div>'+
-        (rx.doctorDeg?'<div class="rxdd">'+escapeHtml(rx.doctorDeg)+'</div>':'')+
-        (rx.doctorSpec?'<div class="rxdd">'+escapeHtml(rx.doctorSpec)+'</div>':'')+
-        (rx.doctorPhone?'<div class="rxdd">📞 '+escapeHtml(rx.doctorPhone)+'</div>':'')+
+  return '<article class="rxp rx-a4">'+
+    '<header class="rx-a4-head">'+
+      '<section class="rx-a4-doctor">'+
+        '<div class="rx-a4-doctor-name">'+escapeHtml(rx.doctorName)+'</div>'+
+        (rx.doctorDeg?'<div>'+escapeHtml(rx.doctorDeg)+'</div>':'')+
+        (rx.doctorSpec?'<div>'+escapeHtml(rx.doctorSpec)+'</div>':'')+
+        (rx.doctorPhone?'<div>'+escapeHtml(rx.doctorPhone)+'</div>':'')+
       '</section>'+
-      '<section class="rxclinic">'+
-        '<div class="rxlocal">'+escapeHtml(CLINIC.localName)+'</div>'+
-        '<div class="rxclinicname">'+escapeHtml(CLINIC.name)+'</div>'+
-        '<div class="rxdd">📍 '+escapeHtml(CLINIC.address)+'</div>'+
-        '<div class="rxdd">📞 '+escapeHtml(CLINIC.phone)+'</div>'+
-        '<div class="rxdate">'+escapeHtml(rx.dateStr)+'</div>'+
-        '<div class="rxid">Prescription No: '+escapeHtml(rx.rxId)+'</div>'+
+      '<section class="rx-a4-qr">'+
+        (isPreview?'<div class="rx-a4-qr-placeholder">QR</div>':
+          '<img src="'+escapeHtml(qrDataUrl)+'" alt="Prescription QR code containing the prescription number and medicine details">')+
+        '<small>Scan for prescription &amp; medicines</small>'+
+      '</section>'+
+      '<section class="rx-a4-clinic">'+
+        '<div class="rx-a4-clinic-bn">'+escapeHtml(CLINIC.localName)+'</div>'+
+        '<div class="rx-a4-clinic-name">'+escapeHtml(CLINIC.name)+'</div>'+
+        '<div>'+escapeHtml(CLINIC.address)+'</div>'+
+        '<div>'+escapeHtml(CLINIC.phone)+'</div>'+
       '</section>'+
     '</header>'+
-    (isPreview?'<div class="rxdraft">PREVIEW — NOT SAVED</div>':'')+
-    '<div class="rxpb">'+
-      '<span><b>Patient:</b> '+escapeHtml(rx.patient||'—')+'</span>'+
-      '<span><b>Age:</b> '+escapeHtml(rx.age||'—')+'</span>'+
-      '<span><b>Gender:</b> '+escapeHtml(rx.gender||'—')+'</span>'+
-      (rx.phone&&rx.phone!=='+8801'?'<span><b>Ph:</b> '+escapeHtml(rx.phone)+'</span>':'')+
-      (rx.bp?'<span><b>BP:</b> '+escapeHtml(rx.bp)+'</span>':'')+
-      (rx.weight?'<span><b>Wt:</b> '+escapeHtml(rx.weight)+'</span>':'')+
-      (rx.temp?'<span><b>Temp:</b> '+escapeHtml(rx.temp)+'</span>':'')+
-    '</div>'+
-    (rx.complaint?'<div class="rxnote"><b>Complaint:</b> '+escapeHtml(rx.complaint)+'</div>':'')+
-    '<div class="rxsymbol">℞</div>'+
-    '<table class="rxmt">'+
-      '<thead><tr><th style="width:24px">#</th><th style="text-align:left;padding-left:8px">Medicine</th><th>☀️Mrng</th><th>🌤️Noon</th><th>🌥️Eve</th><th>🌙Night</th><th>Food</th><th>Days</th></tr></thead>'+
-      '<tbody>'+(rows||'<tr><td colspan="8" style="text-align:center;color:#999;padding:10px">No medicines prescribed</td></tr>')+'</tbody>'+
+    (isPreview?'<div class="rx-a4-draft">PREVIEW — NOT SAVED</div>':'')+
+    '<section class="rx-a4-patient">'+
+      '<div class="rx-a4-field rx-a4-field-wide"><span>Patient name</span><strong>'+escapeHtml(rx.patient||'—')+'</strong></div>'+
+      '<div class="rx-a4-field rx-a4-field-phone"><span>Phone</span><strong>'+escapeHtml(rx.phone&&rx.phone!=='+8801'?rx.phone:'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>Age</span><strong>'+escapeHtml(rx.age||'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>Gender</span><strong>'+escapeHtml(rx.gender||'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>BP</span><strong>'+escapeHtml(rx.bp||'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>Weight</span><strong>'+escapeHtml(rx.weight||'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>Temp</span><strong>'+escapeHtml(rx.temp||'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>Date</span><strong>'+escapeHtml(rx.dateStr)+'</strong></div>'+
+      '<div class="rx-a4-field rx-a4-field-rxid"><span>Prescription no</span><strong>'+escapeHtml(rx.rxId)+'</strong></div>'+
+      (rx.complaint?'<div class="rx-a4-field rx-a4-field-wide"><span>Complaint / Diagnosis</span><strong>'+escapeHtml(rx.complaint)+'</strong></div>':'')+
+    '</section>'+
+    '<div class="rx-a4-mark">℞</div>'+
+    '<table class="rxmt rx-a4-meds">'+
+      '<thead><tr><th class="rx-index">#</th><th class="rx-medicine">Medicine</th><th>Morning</th><th>Noon</th><th>Afternoon</th><th>Night</th><th>With food</th><th>Days</th></tr></thead>'+
+      '<tbody>'+(rows||'<tr><td colspan="8" class="rx-a4-empty">No medicines prescribed</td></tr>')+'</tbody>'+
     '</table>'+
-    (isPreview?'<div class="rxq rxqpreview">QR code is added after saving this prescription.</div>':
-      '<div class="rxq"><img src="'+escapeHtml(qrDataUrl)+'" alt="QR code for prescription '+escapeHtml(rx.rxId)+'"><div><b>Prescription QR</b><br><span>'+escapeHtml(rx.rxId)+'</span></div></div>')+
-    (rx.advice?'<div class="rxnote rxadvice"><b>Advice:</b> '+escapeHtml(rx.advice)+'</div>':'')+
-    '<div class="rxft">'+
-      '<div>'+(nv?'<b>Next Visit:</b> '+nv:'')+'</div>'+
-      '<div class="rxsignature"><div class="rxsignline"></div>'+
-      '<div class="rxsignname">'+escapeHtml(rx.doctorName)+'</div>'+
-      '<div class="rxfee">Fee: ৳'+escapeHtml(rx.fee)+'</div></div>'+
-    '</div>'+
+    '<footer class="rx-a4-foot">'+
+      '<section class="rx-a4-advice">'+
+        '<div class="rx-a4-label">Advice</div>'+
+        '<div class="rx-a4-advice-text">'+escapeHtml(rx.advice||'')+'</div>'+
+        (nv?'<div class="rx-a4-next"><b>Next visit after</b> '+nv+'</div>':'')+
+      '</section>'+
+      '<section class="rx-a4-sign">'+
+        '<div class="rx-a4-sign-line"></div>'+
+        '<div class="rx-a4-label">Signature</div>'+
+        '<div class="rx-a4-sign-name">'+escapeHtml(rx.doctorName)+'</div>'+
+        (rx.doctorDeg?'<div class="rx-a4-sign-degree">'+escapeHtml(rx.doctorDeg)+'</div>':'')+
+        '<div class="rx-a4-sign-fee">Consultation fee: ৳'+escapeHtml(rx.fee)+'</div>'+
+      '</section>'+
+    '</footer>'+
   '</article>';
 }
 

@@ -156,12 +156,17 @@ input[disabled],select[disabled]{background:#f0f0f0;color:#999;cursor:not-allowe
 
 /* PRINT */
 @media print{
-  @page{size:A4;margin:14mm}
+  @page{size:A4;margin:0}
   #ov,#login,#app .hdr,.brow,#pc{display:none!important}
   body *{visibility:hidden}
   #pa,#pa *{visibility:visible}
-  #pa{position:fixed!important;top:0;left:0;width:100%;background:#fff;display:block!important}
-  .rxp{max-width:none!important;padding:0!important}
+  body{margin:0}
+  #app{display:none!important}
+  #pa{position:static!important;top:auto;left:auto;width:100%;background:#fff;display:block!important}
+  .rxp:not(.rx-a4){max-width:none!important;padding:0!important}
+  .rx-a4{width:190mm!important;max-width:none!important;min-height:275mm;padding:8mm!important;margin:0 auto!important;box-shadow:none!important}
+  .rx-a4-meds tr{break-inside:avoid;page-break-inside:avoid}
+  .rx-a4-foot{break-inside:avoid;page-break-inside:avoid}
 }
 #pa{display:none}
 .rxp{font-family:'DM Sans',sans-serif;max-width:800px;margin:0 auto;padding:24px;background:#fff;color:#24352d}
@@ -194,6 +199,44 @@ input[disabled],select[disabled]{background:#f0f0f0;color:#999;cursor:not-allowe
 .rxsignline{width:175px;border-top:1px solid #bacdc2;margin:0 0 5px auto}
 .rxsignname{font-size:12px;font-weight:700;color:#1a5c3a}
 .rxfee{font-size:10px;color:#7a9b8a}
+.rx-a4{box-sizing:border-box;width:190mm;max-width:100%;min-height:275mm;margin:0 auto;padding:8mm;display:flex;flex-direction:column;gap:0;background:#fff;color:#1c1f1e;font-family:'Lora',Georgia,serif;box-shadow:0 2px 14px rgba(0,0,0,.15)}
+.rx-a4-head{display:grid;grid-template-columns:minmax(0,1fr) 30mm minmax(0,1fr);gap:4mm;align-items:stretch;padding-bottom:4mm;border-bottom:1.5px solid #1c1f1e;font-size:9pt;line-height:1.35}
+.rx-a4-doctor,.rx-a4-clinic{display:flex;flex-direction:column;gap:1mm;min-width:0}
+.rx-a4-doctor-name,.rx-a4-clinic-name{font-size:13pt;font-weight:700;line-height:1.3;color:#1c1f1e;overflow-wrap:anywhere}
+.rx-a4-clinic{text-align:right}
+.rx-a4-clinic-bn{font-family:'Noto Serif Bengali',serif;font-size:13pt;font-weight:700;line-height:1.4;color:#1f5a47}
+.rx-a4-qr{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1mm;text-align:center}
+.rx-a4-qr img,.rx-a4-qr-placeholder{display:block;width:28mm;height:28mm;background:#fff;object-fit:contain}
+.rx-a4-qr small{font-size:6.5pt;color:#6b736f}
+.rx-a4-qr-placeholder{display:grid;place-items:center;border:1px dashed #b9c2bd;color:#6b736f;font-family:'Lora',serif;font-size:16pt}
+.rx-a4-draft{text-align:center;margin-top:2mm;color:#a65d00;font-family:'DM Sans',sans-serif;font-size:8pt;font-weight:700;letter-spacing:.5px}
+.rx-a4-patient{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2.5mm 4mm;margin-top:4mm;padding:3mm 4mm;border:1px solid #b9c2bd;border-radius:3px}
+.rx-a4-field{display:flex;flex-direction:column;gap:1px;min-width:0;overflow-wrap:anywhere}
+.rx-a4-field span,.rx-a4-label{font-family:'DM Sans',sans-serif;font-size:7.5pt;color:#6b736f}
+.rx-a4-field strong{font-size:9pt;font-weight:400;white-space:pre-wrap}
+.rx-a4-field-wide{grid-column:span 3}
+.rx-a4-field-phone{grid-column:span 2}
+.rx-a4-field-rxid{grid-column:span 1}
+.rx-a4-mark{margin:3mm 0 1mm;color:#1f5a47;font-family:'Lora',serif;font-size:24pt;font-weight:700;line-height:1}
+.rx-a4-meds{margin-top:0;border-collapse:collapse;font-family:'Lora',Georgia,serif;font-size:8pt}
+.rx-a4-meds th{padding:1mm .5mm 1.5mm;border-bottom:1px solid #1c1f1e;background:#fff;color:#6b736f;font-family:'DM Sans',sans-serif;font-size:7pt;font-weight:600;line-height:1.2;text-align:center}
+.rx-a4-meds td{height:8mm;padding:0 1.5mm;vertical-align:middle;border-bottom:1px solid #b9c2bd}
+.rx-a4-meds .rx-index{width:7mm;color:#6b736f;text-align:center}
+.rx-a4-meds .rx-medicine{min-width:0;text-align:left;overflow-wrap:anywhere}
+.rx-a4-meds th.rx-medicine{font-weight:600}
+.rx-a4-meds .rx-check{width:14mm;text-align:center;font-size:12pt;color:#1f5a47}
+.rx-a4-meds .rx-food{width:27mm;text-align:center}
+.rx-a4-meds .rx-days{width:18mm;text-align:center}
+.rx-a4-empty{text-align:center;color:#6b736f;padding:3mm!important}
+.rx-a4-foot{display:grid;grid-template-columns:minmax(0,1fr) 66mm;gap:8mm;margin-top:auto;padding-top:4mm;border-top:1px solid #b9c2bd}
+.rx-a4-advice{min-width:0}
+.rx-a4-advice-text{min-height:18mm;margin-top:1mm;white-space:pre-wrap;overflow-wrap:anywhere;font-size:9pt}
+.rx-a4-next{margin-top:3mm;font-size:9pt}
+.rx-next-date{margin-left:2mm;color:#6b736f;font-size:8pt}
+.rx-a4-sign{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:1mm;text-align:center;overflow-wrap:anywhere}
+.rx-a4-sign-line{width:100%;height:20mm;border-bottom:1px solid #1c1f1e}
+.rx-a4-sign-name{font-size:10.5pt;font-weight:700}
+.rx-a4-sign-degree,.rx-a4-sign-fee{font-size:8pt;color:#6b736f}
 
 /* PATIENTS */
 .fbar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:11px;align-items:center}
@@ -218,8 +261,11 @@ input[disabled],select[disabled]{background:#f0f0f0;color:#999;cursor:not-allowe
 .bok{background:var(--gl);color:var(--g1)}.blow{background:var(--red-l);color:var(--red)}.bout{background:#fff3e0;color:#e65100}
 
 /* BILLING */
-.uid{display:flex;gap:7px;margin-bottom:12px}
-.uid input{flex:1;font-size:15px;font-weight:600;letter-spacing:1px}
+.uid{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap}
+.uid input{flex:1;min-width:180px;font-size:15px;font-weight:600;letter-spacing:1px}
+.rxscanner{margin:0 0 12px;padding:10px;border:1px solid var(--border);border-radius:10px;background:#101714}
+.rxscanner video{display:block;width:100%;max-height:320px;object-fit:contain}
+.rxscanner-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;color:#fff;font-size:12px}
 .rxsum{background:var(--gp);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px}
 .bmr{background:#fff;border:1px solid var(--border);border-radius:9px;padding:10px 11px;margin-bottom:8px}
 .bmn{font-weight:600;font-size:13px;margin-bottom:4px}
@@ -286,6 +332,7 @@ input[disabled],select[disabled]{background:#f0f0f0;color:#999;cursor:not-allowe
 @media(max-width:599px){
   .r2,.r3{grid-template-columns:1fr}
   .svcg{grid-template-columns:1fr}
+  .uid input{flex-basis:100%}
   .member-toolbar{flex-direction:column}
   .member-toolbar .rtabs,.member-search{width:100%}
   .member-section-head{align-items:flex-start;flex-direction:column}
