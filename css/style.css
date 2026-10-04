@@ -156,23 +156,44 @@ input[disabled],select[disabled]{background:#f0f0f0;color:#999;cursor:not-allowe
 
 /* PRINT */
 @media print{
+  @page{size:A4;margin:14mm}
   #ov,#login,#app .hdr,.brow,#pc{display:none!important}
   body *{visibility:hidden}
   #pa,#pa *{visibility:visible}
   #pa{position:fixed!important;top:0;left:0;width:100%;background:#fff;display:block!important}
+  .rxp{max-width:none!important;padding:0!important}
 }
 #pa{display:none}
-.rxp{font-family:'DM Sans',sans-serif;max-width:700px;margin:0 auto;padding:16px;background:#fff}
-.rxph{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:12px;border-bottom:3px double #1a5c3a;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.rxp{font-family:'DM Sans',sans-serif;max-width:800px;margin:0 auto;padding:24px;background:#fff;color:#24352d}
+.rxph{display:grid;grid-template-columns:1fr 1fr;align-items:start;padding-bottom:14px;border-bottom:3px double #1a5c3a;margin-bottom:14px;gap:16px}
+.rxdoctor,.rxclinic{min-width:0}
+.rxclinic{text-align:right}
 .rxdn{font-family:'Lora',serif;font-size:19px;font-weight:700;color:#1a5c3a}
 .rxdd{font-size:11px;color:#3d5c4a;margin-top:2px;line-height:1.5}
+.rxlocal{font-family:'Noto Serif Bengali',serif;font-size:19px;font-weight:700;color:#1a5c3a}
+.rxclinicname{font-size:11px;font-weight:700;letter-spacing:.5px;color:#22774d}
+.rxdate{font-size:11px;color:#7a9b8a;margin-top:5px}
+.rxid{font-size:12px;font-weight:800;color:#b3261e;letter-spacing:.4px;margin-top:3px;overflow-wrap:anywhere}
 .rxpb{display:flex;gap:12px;background:#f2faf6;border-radius:8px;padding:9px 12px;margin-bottom:12px;flex-wrap:wrap;font-size:12px}
 .rxpb span b{color:#1a5c3a}
+.rxnote{margin:0 0 10px;font-size:12px}
+.rxnote b{color:#1a5c3a}
+.rxsymbol{font-family:'Lora',serif;font-size:34px;color:#1a5c3a;opacity:.2;line-height:1;margin-bottom:-4px}
 .rxmt{width:100%;border-collapse:collapse;font-size:11px;margin-top:8px}
 .rxmt th{background:#1a5c3a;color:#fff;padding:6px 7px;text-align:center;font-size:10px}
 .rxmt td{padding:6px 7px;border-bottom:1px solid #cde0d5;text-align:center}
 .rxmt td:nth-child(2){text-align:left}
+.rxq{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:12px;font-size:10px;color:#3d5c4a}
+.rxq img{width:88px;height:88px;object-fit:contain}
+.rxq span{font-size:9px;overflow-wrap:anywhere}
+.rxqpreview{min-height:48px;font-style:italic}
+.rxdraft{margin:-5px 0 10px;text-align:center;color:#a65d00;font-size:10px;font-weight:700;letter-spacing:1px}
+.rxadvice{padding:8px 11px;background:#f2faf6;border-radius:7px}
 .rxft{display:flex;justify-content:space-between;margin-top:16px;padding-top:10px;border-top:1px solid #cde0d5;font-size:11px}
+.rxsignature{text-align:right}
+.rxsignline{width:175px;border-top:1px solid #bacdc2;margin:0 0 5px auto}
+.rxsignname{font-size:12px;font-weight:700;color:#1a5c3a}
+.rxfee{font-size:10px;color:#7a9b8a}
 
 /* PATIENTS */
 .fbar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:11px;align-items:center}

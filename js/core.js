@@ -2,7 +2,7 @@
 import { deleteApp, initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getFirestore, collection, doc, getDocs, addDoc, setDoc,
-  updateDoc, deleteDoc, query, orderBy, limit, getDoc, where
+  updateDoc, deleteDoc, query, orderBy, limit, getDoc, where, runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
@@ -30,6 +30,12 @@ export const col  = n      => collection(db, n);
 export const dref = (n,id) => doc(db, n, id);
 export const fadd = (n,d)  => addDoc(col(n), d);
 export const fset = (n,id,d) => setDoc(dref(n,id), d);
+export const fcreate = (n,id,d) => runTransaction(db, async transaction => {
+  const ref=dref(n,id);
+  if((await transaction.get(ref)).exists()) return false;
+  transaction.set(ref,d);
+  return true;
+});
 export const fupd = (n,id,d) => updateDoc(dref(n,id), d);
 export const fdel = (n,id)   => deleteDoc(dref(n,id));
 export const fget = (n,id)   => getDoc(dref(n,id));

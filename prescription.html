@@ -11,7 +11,7 @@
 <div id="app">
   <div class="hdr" id="hdr"></div>
   <div class="cnt">
-    <h1 class="ptitle">📋 Prescription <span id="rxid" style="font-size:12px;font-weight:400;color:var(--t3)"></span></h1>
+    <h1 class="ptitle">📋 Prescription <span id="rxid" style="display:inline-block;max-width:100%;overflow-wrap:anywhere;font-size:12px;font-weight:400;color:var(--t3)"></span></h1>
 
     <div class="card">
       <div class="ct">👤 Patient Info <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">রোগীর তথ্য</span></div>
@@ -37,9 +37,8 @@
         </div>
         <div class="fg"><label>BP <span class="lbn">রক্তচাপ</span></label><input type="text" id="rxbp" placeholder="120/80"></div>
       </div>
-      <div class="row r3">
+      <div class="row r2">
         <div class="fg"><label>Weight <span class="lbn">ওজন</span></label><input type="text" id="rxwt" placeholder="55 kg"></div>
-        <div class="fg"><label>Fever <span class="lbn">জ্বর</span></label><input type="text" id="rxfv" placeholder="101°F"></div>
         <div class="fg"><label>Temp <span class="lbn">তাপমাত্রা</span></label><input type="text" id="rxtemp" placeholder="98.4°F"></div>
       </div>
       <div class="fg"><label>Complaint / Diagnosis <span class="lbn">সমস্যা</span></label><textarea id="rxcc" placeholder="Chief complaint..."></textarea></div>
@@ -63,7 +62,7 @@
           <tbody id="rxmeds"></tbody>
         </table>
       </div>
-      <button class="amb" onclick="addMedRow()">➕ Add Medicine / ওষুধ যোগ করুন</button>
+      <button class="amb" type="button" id="addmedbtn">➕ Add Medicine / ওষুধ যোগ করুন</button>
     </div>
 
     <div class="card">
@@ -89,7 +88,14 @@
 <div id="pa"></div>
 
 <script type="module">
-import { loadAll, requireRole, renderHeader, getSession, openModal, closeModal, printHTML, sync, fadd, fset, fupd, INV, PTS, DOCS } from './js/core.js';
+import { loadAll, requireRole, renderHeader, printHTML, sync, fadd, fcreate, fupd, INV, PTS, DOCS } from './js/core.js';
+
+const CLINIC = {
+  name:'A Islam Medical Hall',
+  localName:'এ ইসলাম মেডিকেল হল',
+  address:'Kasba Puratan Bazar, Kasba, Brahmanbaria',
+  phone:'01884794060'
+};
 
 const session = await requireRole(['doctor','admin']);
 if(session){
@@ -98,18 +104,32 @@ if(session){
   initPage();
 }
 
-let medRows=[], curRxId='';
+let medRows=[], curRxId='', medRowSeq=0;
 
 function genRxId(){
-  let n=''; for(let i=0;i<8;i++) n+=Math.floor(Math.random()*10);
-  curRxId='P'+n;
+  const digits=[];
+  while(digits.length<32){
+    const bytes=new Uint8Array(64);
+    crypto.getRandomValues(bytes);
+    for(const byte of bytes){
+      if(digits.length===0){
+        if(byte<252) digits.push(byte%9+1);
+      }else if(byte<250){
+        digits.push(byte%10);
+      }
+      if(digits.length===32) break;
+    }
+  }
+  curRxId=digits.join('');
   document.getElementById('rxid').textContent='· '+curRxId;
 }
 
 function fillDocSel(){
   const sel=document.getElementById('rxdoc');
-  sel.innerHTML='<option value="">— Select Doctor —</option>'+
-    DOCS.filter(d=>!d.isCoFounder).map(d=>'<option value="'+d.id+'">'+d.name+(d.spec?' ('+d.spec+')':'')+'</option>').join('');
+  sel.replaceChildren(new Option('— Select Doctor —',''));
+  DOCS.filter(d=>!d.isCoFounder).forEach(d=>{
+    sel.add(new Option(d.name+(d.spec?' ('+d.spec+')':''),d.id));
+  });
   if(session.role==='doctor'){ sel.value=session.myDocId; sel.disabled=true; }
   updDocInfo();
 }
@@ -120,8 +140,8 @@ window.updDocInfo=function(){
     d ? (d.deg||'')+' · '+(d.spec||'')+(d.days?' · '+d.days:'') : '';
 };
 
-window.addMedRow=function(){
-  const id=Date.now();
+function addMedRow(){
+  const id=++medRowSeq;
   medRows.push(id);
   const tr=document.createElement('tr');
   tr.id='mr-'+id;
@@ -141,9 +161,9 @@ window.addMedRow=function(){
     '<td><div class="dc"><div class="dt" onclick="this.classList.toggle(\'on\');this.textContent=this.classList.contains(\'on\')?\'✓\':\'\'"></div></div></td>'+
     '<td><select style="font-size:11px;padding:5px 3px"><option value="after">After</option><option value="before">Before</option></select></td>'+
     '<td><input type="number" min="1" max="90" placeholder="Days" style="width:44px;font-size:11px;text-align:center;padding:5px 3px"></td>'+
-    '<td><button class="rmb" onclick="remMedRow('+id+')">✕</button></td>';
+    '<td><button class="rmb" type="button" onclick="remMedRow('+id+')">✕</button></td>';
   document.getElementById('rxmeds').appendChild(tr);
-};
+}
 
 window.remMedRow=function(id){
   medRows=medRows.filter(r=>r!==id);
@@ -155,24 +175,43 @@ window.doMedSearch=function(input,dropId){
   const q=input.value.toLowerCase().trim();
   const drop=document.getElementById(dropId);
   if(!drop) return;
-  const matches=q.length<1 ? INV.slice(0,10) : INV.filter(m=>m.name.toLowerCase().includes(q));
+  const inventory=INV.filter(m=>typeof m.name==='string' && m.name.trim());
+  const matches=q.length<1 ? inventory.slice(0,10) : inventory.filter(m=>m.name.toLowerCase().includes(q));
   if(!matches.length){ drop.classList.remove('on'); return; }
   const rect=input.getBoundingClientRect();
   drop.style.cssText='left:'+rect.left+'px;top:'+(rect.bottom+2)+'px;width:'+Math.max(rect.width,230)+'px;position:fixed';
-  drop.innerHTML=matches.map(m=>{
-    const st=m.stock===0?'<span style="color:var(--red);font-size:9px">Out</span>':m.stock<=m.reorder?'<span style="color:var(--gold);font-size:9px">Low</span>':'';
-    return '<div class="mdi" onclick="pickMed(this,\''+dropId+'\')">'+
-      '<div><div class="mdn">'+m.name+'</div><div class="mdm">'+m.type+' · '+(m.company||'')+'</div></div>'+
-      '<div style="text-align:right"><div class="mds">Stk:'+m.stock+'</div>'+st+'</div></div>';
-  }).join('');
+  drop.replaceChildren();
+  matches.forEach(m=>{
+    const item=document.createElement('div');
+    item.className='mdi';
+    const details=document.createElement('div');
+    const name=document.createElement('div');
+    name.className='mdn';
+    name.textContent=m.name;
+    const meta=document.createElement('div');
+    meta.className='mdm';
+    meta.textContent=(m.type||'')+' · '+(m.company||'');
+    details.append(name,meta);
+    const stockDetails=document.createElement('div');
+    stockDetails.style.textAlign='right';
+    const stock=document.createElement('div');
+    stock.className='mds';
+    stock.textContent='Stk:'+(m.stock??0);
+    stockDetails.append(stock);
+    if(m.stock===0 || (typeof m.stock==='number' && typeof m.reorder==='number' && m.stock<=m.reorder)){
+      const status=document.createElement('span');
+      status.style.cssText='font-size:9px;color:'+(m.stock===0?'var(--red)':'var(--gold)');
+      status.textContent=m.stock===0?'Out':'Low';
+      stockDetails.append(status);
+    }
+    item.append(details,stockDetails);
+    item.addEventListener('click',()=>{
+      input.value=m.name;
+      drop.classList.remove('on');
+    });
+    drop.appendChild(item);
+  });
   drop.classList.add('on');
-};
-
-window.pickMed=function(el,dropId){
-  const drop=document.getElementById(dropId);
-  const input=drop.parentElement?.querySelector('input');
-  if(input) input.value=el.querySelector('.mdn').textContent;
-  drop.classList.remove('on');
 };
 
 document.addEventListener('click',e=>{
@@ -217,17 +256,17 @@ function getRxData(){
     gender:document.getElementById('rxgender').value,
     bp:document.getElementById('rxbp').value,
     weight:document.getElementById('rxwt').value,
-    fever:document.getElementById('rxfv').value,
+    fever:'',
     temp:document.getElementById('rxtemp').value,
     complaint:document.getElementById('rxcc').value,
     advice:document.getElementById('rxadv').value,
     nextVisit:document.getElementById('rxnv').value,
     fee:parseInt(document.getElementById('rxfee').value)||0,
     doctorId:docId,
-    doctorName:docObj?.name||'Dr. Md. Omar Farook',
-    doctorDeg:docObj?.deg||'B.D.RMP-DMS, MCHC (Dhaka)',
-    doctorSpec:docObj?.spec||'Skin, Sex & General Medicine',
-    doctorPhone:docObj?.phone||'01830079952',
+    doctorName:docObj?.name||'',
+    doctorDeg:docObj?.deg||'',
+    doctorSpec:docObj?.spec||'',
+    doctorPhone:docObj?.phone||'',
     meds
   };
 }
@@ -239,29 +278,63 @@ window.saveRx=async function(){
   const btn=document.getElementById('saverxbtn');
   btn.innerHTML='<span class="sp"></span>Saving...'; btn.disabled=true;
   try{
-    await fset('prescriptions',rx.rxId,{...rx,savedAt:new Date().toISOString()});
-    const ex=PTS.find(p=>p.phone===rx.phone && rx.phone!=='+8801');
-    if(!ex){
-      await fadd('patients',{name:rx.patient,phone:rx.phone,age:rx.age,gender:rx.gender,visits:1,lastVisit:rx.date,lastRxId:rx.rxId,ca:new Date().toISOString()});
-    }else{
-      await fupd('patients',ex.id,{visits:(ex.visits||0)+1,lastVisit:rx.date,lastRxId:rx.rxId,name:rx.patient,age:rx.age});
+    let created=false, qrDataUrl='';
+    for(let attempt=0;attempt<5 && !created;attempt++){
+      rx.rxId=curRxId;
+      qrDataUrl=await makeQrDataUrl(rx.rxId);
+      created=await fcreate('prescriptions',rx.rxId,{...rx,savedAt:new Date().toISOString()});
+      if(!created) genRxId();
+    }
+    if(!created) throw new Error('Could not allocate a unique prescription number. Please try again.');
+    let patientError=null;
+    try{
+      const ex=PTS.find(p=>p.phone===rx.phone && rx.phone!=='+8801');
+      if(!ex){
+        await fadd('patients',{name:rx.patient,phone:rx.phone,age:rx.age,gender:rx.gender,visits:1,lastVisit:rx.date,lastRxId:rx.rxId,ca:new Date().toISOString()});
+      }else{
+        await fupd('patients',ex.id,{visits:(ex.visits||0)+1,lastVisit:rx.date,lastRxId:rx.rxId,name:rx.patient,age:rx.age});
+      }
+    }catch(error){
+      patientError=error;
+      console.error('Prescription saved, but patient history update failed:',error);
     }
     sync('✅ Saved!');
-    printHTML(buildPrintRx(rx), false);
+    printHTML(buildPrintRx(rx,qrDataUrl), false);
     clearRx(); genRxId();
+    if(patientError) alert('✅ Prescription saved and printed, but patient history could not be updated: '+(patientError.message||patientError));
   }catch(e){
     console.error('saveRx error:',e);
     alert('❌ Save failed: '+e.message);
   }finally{ btn.innerHTML='💾 Save & Print'; btn.disabled=false; }
 };
 
-window.previewRx=function(){ printHTML(buildPrintRx(getRxData()), true); };
+let qrCodeModulePromise;
+async function makeQrDataUrl(rxId){
+  qrCodeModulePromise ||= import('https://esm.sh/qrcode@1.5.4');
+  const QRCode=await qrCodeModulePromise;
+  return QRCode.toDataURL(rxId,{errorCorrectionLevel:'M',margin:1,width:112});
+}
 
-function buildPrintRx(rx){
+window.previewRx=async function(){
+  try{
+    printHTML(buildPrintRx(getRxData(),'',true),true);
+  }catch(error){
+    console.error('Prescription preview failed:',error);
+    alert('❌ Preview failed: '+error.message);
+  }
+};
+
+function escapeHtml(value){
+  return String(value??'').replace(/[&<>"']/g,char=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[char]);
+}
+
+function buildPrintRx(rx,qrDataUrl='',isPreview=false){
   const dc=v=>'<td style="text-align:center;color:'+(v?'#1a5c3a':'#ddd')+';font-weight:700;font-size:13px">'+(v?'✓':'—')+'</td>';
   const rows=rx.meds.map((m,i)=>
     '<tr><td style="text-align:center;color:#999;font-size:10px">'+(i+1)+'</td>'+
-    '<td style="font-weight:600;padding:6px 8px">'+m.name+'</td>'+
+    '<td style="font-weight:600;padding:6px 8px">'+escapeHtml(m.name)+'</td>'+
     dc(m.morning)+dc(m.noon)+dc(m.evening)+dc(m.night)+
     '<td style="text-align:center;font-size:10px">'+(m.food==='before'?'Before':'After')+'</td>'+
     '<td style="text-align:center;font-weight:600">'+(m.days||'—')+'</td></tr>'
@@ -269,52 +342,55 @@ function buildPrintRx(rx){
   let nv='';
   if(rx.nextVisit){
     const d=new Date(rx.date); d.setDate(d.getDate()+parseInt(rx.nextVisit));
-    nv='After '+rx.nextVisit+' days ('+d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+')';
+    nv='After '+escapeHtml(rx.nextVisit)+' days ('+d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+')';
   }
-  return '<div class="rxp" style="max-width:800px;margin:auto;border:1px solid #eee;padding:40px;position:relative;background:#fff">'+
-    '<div class="rxph" style="display:flex;justify-content:space-between;border-bottom:2px solid #1a5c3a;padding-bottom:15px;margin-bottom:20px">'+
-      '<div>'+
-        '<div class="rxdn" style="font-size:22px;font-weight:800;color:#1a5c3a;font-family:\'Lora\',serif">'+rx.doctorName+'</div>'+
-        '<div class="rxdd" style="font-size:13px;font-weight:600;color:#333;margin-top:2px">'+rx.doctorDeg+'</div>'+
-        '<div class="rxdd" style="font-size:12px;color:#666">'+rx.doctorSpec+'</div>'+
-        '<div class="rxdd" style="margin-top:8px;font-size:11px;color:#1a5c3a;font-weight:600">📍 A Islam Medical Hall, Kasba Puratan Bazar, Kasba, Brahmanbaria</div>'+
-        '<div class="rxdd" style="font-size:11px;color:#444">📞 '+rx.doctorPhone+' &nbsp;|&nbsp; Clinic: 01884794060</div>'+
-      '</div>'+
-      '<div style="text-align:right">'+
-        '<div style="font-family:\'Noto Serif Bengali\',serif;font-size:20px;font-weight:700;color:#1a5c3a">এ ইসলাম মেডিকেল হল</div>'+
-        '<div style="font-size:11px;color:#22774d;font-weight:700;letter-spacing:0.5px;margin-top:2px">A ISLAM MEDICAL HALL</div>'+
-        '<div style="font-size:11px;color:#7a9b8a;margin-top:5px">'+rx.dateStr+'</div>'+
-        '<div style="font-size:15px;font-weight:800;color:#d32f2f;margin-top:5px;letter-spacing:1px">ID: '+rx.rxId+'</div>'+
-      '</div>'+
-    '</div>'+
+  return '<article class="rxp">'+
+    '<header class="rxph">'+
+      '<section class="rxdoctor">'+
+        '<div class="rxdn">'+escapeHtml(rx.doctorName)+'</div>'+
+        (rx.doctorDeg?'<div class="rxdd">'+escapeHtml(rx.doctorDeg)+'</div>':'')+
+        (rx.doctorSpec?'<div class="rxdd">'+escapeHtml(rx.doctorSpec)+'</div>':'')+
+        (rx.doctorPhone?'<div class="rxdd">📞 '+escapeHtml(rx.doctorPhone)+'</div>':'')+
+      '</section>'+
+      '<section class="rxclinic">'+
+        '<div class="rxlocal">'+escapeHtml(CLINIC.localName)+'</div>'+
+        '<div class="rxclinicname">'+escapeHtml(CLINIC.name)+'</div>'+
+        '<div class="rxdd">📍 '+escapeHtml(CLINIC.address)+'</div>'+
+        '<div class="rxdd">📞 '+escapeHtml(CLINIC.phone)+'</div>'+
+        '<div class="rxdate">'+escapeHtml(rx.dateStr)+'</div>'+
+        '<div class="rxid">Prescription No: '+escapeHtml(rx.rxId)+'</div>'+
+      '</section>'+
+    '</header>'+
+    (isPreview?'<div class="rxdraft">PREVIEW — NOT SAVED</div>':'')+
     '<div class="rxpb">'+
-      '<span><b>Patient:</b> '+(rx.patient||'—')+'</span>'+
-      '<span><b>Age:</b> '+(rx.age||'—')+'</span>'+
-      '<span><b>Gender:</b> '+(rx.gender||'—')+'</span>'+
-      (rx.phone&&rx.phone!=='+8801'?'<span><b>Ph:</b> '+rx.phone+'</span>':'')+
-      (rx.bp?'<span><b>BP:</b> '+rx.bp+'</span>':'')+
-      (rx.weight?'<span><b>Wt:</b> '+rx.weight+'</span>':'')+
-      (rx.fever?'<span><b>Fever:</b> '+rx.fever+'</span>':'')+
-      (rx.temp?'<span><b>Temp:</b> '+rx.temp+'</span>':'')+
+      '<span><b>Patient:</b> '+escapeHtml(rx.patient||'—')+'</span>'+
+      '<span><b>Age:</b> '+escapeHtml(rx.age||'—')+'</span>'+
+      '<span><b>Gender:</b> '+escapeHtml(rx.gender||'—')+'</span>'+
+      (rx.phone&&rx.phone!=='+8801'?'<span><b>Ph:</b> '+escapeHtml(rx.phone)+'</span>':'')+
+      (rx.bp?'<span><b>BP:</b> '+escapeHtml(rx.bp)+'</span>':'')+
+      (rx.weight?'<span><b>Wt:</b> '+escapeHtml(rx.weight)+'</span>':'')+
+      (rx.temp?'<span><b>Temp:</b> '+escapeHtml(rx.temp)+'</span>':'')+
     '</div>'+
-    (rx.complaint?'<div style="margin-bottom:10px;font-size:12px"><b style="color:#1a5c3a">Complaint:</b> '+rx.complaint+'</div>':'')+
-    '<div style="font-size:38px;font-family:\'Lora\',serif;color:#1a5c3a;opacity:0.12;line-height:1;margin-bottom:-5px">℞</div>'+
+    (rx.complaint?'<div class="rxnote"><b>Complaint:</b> '+escapeHtml(rx.complaint)+'</div>':'')+
+    '<div class="rxsymbol">℞</div>'+
     '<table class="rxmt">'+
       '<thead><tr><th style="width:24px">#</th><th style="text-align:left;padding-left:8px">Medicine</th><th>☀️Mrng</th><th>🌤️Noon</th><th>🌥️Eve</th><th>🌙Night</th><th>Food</th><th>Days</th></tr></thead>'+
       '<tbody>'+(rows||'<tr><td colspan="8" style="text-align:center;color:#999;padding:10px">No medicines prescribed</td></tr>')+'</tbody>'+
     '</table>'+
-    (rx.advice?'<div style="margin-top:12px;padding:8px 11px;background:#f2faf6;border-radius:7px;font-size:11px"><b style="color:#1a5c3a">Advice:</b> '+rx.advice+'</div>':'')+
+    (isPreview?'<div class="rxq rxqpreview">QR code is added after saving this prescription.</div>':
+      '<div class="rxq"><img src="'+escapeHtml(qrDataUrl)+'" alt="QR code for prescription '+escapeHtml(rx.rxId)+'"><div><b>Prescription QR</b><br><span>'+escapeHtml(rx.rxId)+'</span></div></div>')+
+    (rx.advice?'<div class="rxnote rxadvice"><b>Advice:</b> '+escapeHtml(rx.advice)+'</div>':'')+
     '<div class="rxft">'+
       '<div>'+(nv?'<b>Next Visit:</b> '+nv:'')+'</div>'+
-      '<div style="text-align:right"><div style="font-size:12px;color:#ccc">______________________</div>'+
-      '<div style="font-size:12px;font-weight:700;color:#1a5c3a">'+rx.doctorName+'</div>'+
-      '<div style="font-size:10px;color:#7a9b8a">Fee: ৳'+rx.fee+'</div></div>'+
+      '<div class="rxsignature"><div class="rxsignline"></div>'+
+      '<div class="rxsignname">'+escapeHtml(rx.doctorName)+'</div>'+
+      '<div class="rxfee">Fee: ৳'+escapeHtml(rx.fee)+'</div></div>'+
     '</div>'+
-  '</div>';
+  '</article>';
 }
 
 window.clearRx=function(){
-  ['rxname','rxbp','rxwt','rxfv','rxtemp','rxcc','rxadv'].forEach(id=>{document.getElementById(id).value='';});
+  ['rxname','rxbp','rxwt','rxtemp','rxcc','rxadv'].forEach(id=>{document.getElementById(id).value='';});
   document.getElementById('rxphone').value='+8801';
   document.getElementById('rxagenum').value='';
   document.getElementById('rxageunit').value='years';
@@ -328,6 +404,7 @@ window.clearRx=function(){
 
 function initPage(){
   document.getElementById('app').classList.add('on');
+  document.getElementById('addmedbtn').addEventListener('click',addMedRow);
   fillDocSel();
   addMedRow();
   genRxId();
