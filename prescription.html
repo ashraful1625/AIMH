@@ -147,7 +147,7 @@ function addMedRow(){
     '<td><div class="dc"><div class="dt" onclick="this.classList.toggle(\'on\');this.textContent=this.classList.contains(\'on\')?\'✓\':\'\'"></div></div></td>'+
     '<td><div class="dc"><div class="dt" onclick="this.classList.toggle(\'on\');this.textContent=this.classList.contains(\'on\')?\'✓\':\'\'"></div></div></td>'+
     '<td><select style="font-size:11px;padding:5px 3px"><option value="after">পরে</option><option value="before">আগে</option></select></td>'+
-    '<td><input type="number" min="1" max="90" placeholder="Days" style="width:44px;font-size:11px;text-align:center;padding:5px 3px"></td>'+
+    '<td><input class="mdays" type="number" min="1" max="90" placeholder="Days" style="width:44px;font-size:11px;text-align:center;padding:5px 3px"></td>'+
     '<td><button class="rmb" type="button" onclick="remMedRow('+id+')">✕</button></td>';
   document.getElementById('rxmeds').appendChild(tr);
   tr.querySelector('.mi').addEventListener('keydown',onMedKey);
@@ -222,48 +222,65 @@ function getAge(){
   return n ? (n+' '+u) : '';
 }
 
+function asText(value, maxLen){
+  return String(value ?? '').slice(0, maxLen);
+}
+
+function asInt(value, minValue, maxValue){
+  const n=parseInt(value,10);
+  if(!Number.isFinite(n)) return minValue;
+  return Math.min(maxValue, Math.max(minValue, n));
+}
+
+function asNum(value, minValue, maxValue){
+  const n=typeof value==='number' ? value : parseFloat(value);
+  if(!Number.isFinite(n)) return minValue;
+  return Math.min(maxValue, Math.max(minValue, n));
+}
+
 function getRxData(){
-  const docId=document.getElementById('rxdoc').value||'';
+  const docId=asText(document.getElementById('rxdoc').value,128);
   const docObj=DOCS.find(d=>d.id===docId)||null;
   const meds=[];
   document.querySelectorAll('#rxmeds tr').forEach(tr=>{
-    const name=tr.querySelector('.mi')?.value?.trim();
+    const name=asText(tr.querySelector('.mi')?.value?.trim(),160);
     if(!name) return;
     const dots=tr.querySelectorAll('.dt');
-    const inv2=INV.find(m=>m.name.toLowerCase()===name.toLowerCase());
+    const inv2=INV.find(m=>typeof m.name==='string' && m.name.toLowerCase()===name.toLowerCase());
+    const food=tr.querySelector('select')?.value==='before'?'before':'after';
     meds.push({
       name,
-      morning:dots[0]?.classList.contains('on')||false,
-      noon:dots[1]?.classList.contains('on')||false,
-      evening:dots[2]?.classList.contains('on')||false,
-      night:dots[3]?.classList.contains('on')||false,
-      food:tr.querySelector('select')?.value||'after',
-      days:parseInt(tr.querySelector('input[type=number]')?.value)||0,
-      unitPrice:inv2?.sell||0,
-      type:inv2?.type||''
+      morning:!!dots[0]?.classList.contains('on'),
+      noon:!!dots[1]?.classList.contains('on'),
+      evening:!!dots[2]?.classList.contains('on'),
+      night:!!dots[3]?.classList.contains('on'),
+      food,
+      days:asInt(tr.querySelector('.mdays')?.value,0,10000),
+      unitPrice:asNum(inv2?.sell,0,10000000),
+      type:asText(inv2?.type,50)
     });
   });
   return {
-    rxId:curRxId,
+    rxId:asText(curRxId,40),
     date:new Date().toISOString().split('T')[0],
-    dateStr:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),
-    patient:document.getElementById('rxname').value.trim(),
-    phone:document.getElementById('rxphone').value.trim(),
-    age:getAge(),
-    gender:document.getElementById('rxgender').value,
-    bp:document.getElementById('rxbp').value,
-    weight:document.getElementById('rxwt').value,
+    dateStr:asText(new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),40),
+    patient:asText(document.getElementById('rxname').value.trim(),120),
+    phone:asText(document.getElementById('rxphone').value.trim(),30),
+    age:asText(getAge(),30),
+    gender:asText(document.getElementById('rxgender').value,30),
+    bp:asText(document.getElementById('rxbp').value,40),
+    weight:asText(document.getElementById('rxwt').value,40),
     fever:'',
-    temp:document.getElementById('rxtemp').value,
-    complaint:document.getElementById('rxcc').value,
-    advice:document.getElementById('rxadv').value,
-    nextVisit:document.getElementById('rxnv').value,
-    fee:parseInt(document.getElementById('rxfee').value)||0,
+    temp:asText(document.getElementById('rxtemp').value,40),
+    complaint:asText(document.getElementById('rxcc').value,2000),
+    advice:asText(document.getElementById('rxadv').value,2000),
+    nextVisit:asText(document.getElementById('rxnv').value,40),
+    fee:asInt(document.getElementById('rxfee').value,0,10000000),
     doctorId:docId,
-    doctorName:docObj?.name||'',
-    doctorDeg:docObj?.deg||'',
-    doctorSpec:docObj?.spec||'',
-    doctorPhone:docObj?.phone||'',
+    doctorName:asText(docObj?.name,100),
+    doctorDeg:asText(docObj?.deg,160),
+    doctorSpec:asText(docObj?.spec,160),
+    doctorPhone:asText(docObj?.phone,30),
     meds
   };
 }
@@ -300,7 +317,10 @@ window.saveRx=async function(){
     if(patientError) alert('✅ Prescription saved and printed, but patient history could not be updated: '+(patientError.message||patientError));
   }catch(e){
     console.error('saveRx error:',e);
-    alert('❌ Save failed: '+e.message);
+    const denied=e?.code==='permission-denied' || /insufficient permissions/i.test(e?.message||'');
+    alert(denied
+      ? '❌ Save failed: Firestore rejected this prescription. The prescription number is only stored if this write succeeds. Check that you are signed in as a doctor or admin, then try again.'
+      : '❌ Save failed: '+e.message);
   }finally{ btn.innerHTML='💾 Save & Print'; btn.disabled=false; }
 };
 
