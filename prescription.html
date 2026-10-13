@@ -432,34 +432,18 @@ function buildPrintRx(rx,qrDataUrl='',isPreview=false){
     nv=escapeHtml(rx.nextVisit)+' days'+
       ' <span class="rx-next-date">'+d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+'</span>';
   }
-  const isOmarFarook=(rx.doctorName||'').trim().toLowerCase()==='md omar farook';
-  const doctor={
-    name:isOmarFarook?'MD Omar Farook':rx.doctorName,
-    degree:isOmarFarook?'BRDMP-DMS, MCHC (Dhaka), BPCF':rx.doctorDeg,
-    registration:isOmarFarook?'5-13052':'',
-    expertise:isOmarFarook?'Skin, Mother & Child, Sex':rx.doctorSpec,
-    phone:isOmarFarook?'01830079952':rx.doctorPhone
-  };
-  const dateParts=(rx.date||'').split('-');
-  const printDate=dateParts.length===3
-    ? dateParts[2]+'/'+dateParts[1]+'/'+dateParts[0]
-    : rx.dateStr;
-  const temperature=(rx.temp||'').trim().replace(/\s*[°º]?\s*F$/i,'');
-  const printTemperature=temperature ? temperature+' °F' : '';
-  const weight=(rx.weight||'').trim();
-  const printWeight=weight ? weight.replace(/\s*kg$/i,'')+' KG' : '';
   return '<article class="rxp rx-a4">'+
     '<header class="rx-a4-head">'+
       '<section class="rx-a4-doctor">'+
-        '<div class="rx-a4-doctor-name">'+escapeHtml(doctor.name)+'</div>'+
-        (doctor.degree?'<div>'+escapeHtml(doctor.degree)+'</div>':'')+
-        (doctor.registration?'<div>Gov&#39;t reg no : '+escapeHtml(doctor.registration)+'</div>':'')+
-        (doctor.expertise?'<div>Expertise : '+escapeHtml(doctor.expertise)+'</div>':'')+
-        (doctor.phone?'<div>Phone : '+escapeHtml(doctor.phone)+'</div>':'')+
+        '<div class="rx-a4-doctor-name">'+escapeHtml(rx.doctorName)+'</div>'+
+        (rx.doctorDeg?'<div>'+escapeHtml(rx.doctorDeg)+'</div>':'')+
+        (rx.doctorSpec?'<div>'+escapeHtml(rx.doctorSpec)+'</div>':'')+
+        (rx.doctorPhone?'<div>'+escapeHtml(rx.doctorPhone)+'</div>':'')+
       '</section>'+
       '<section class="rx-a4-qr">'+
         (isPreview?'<div class="rx-a4-qr-placeholder">QR</div>':
           '<img src="'+escapeHtml(qrDataUrl)+'" alt="Prescription QR code containing the prescription number and medicine details">')+
+        '<small>Scan for prescription &amp; medicines</small>'+
       '</section>'+
       '<section class="rx-a4-clinic">'+
         '<div class="rx-a4-clinic-bn">'+escapeHtml(CLINIC.localName)+'</div>'+
@@ -470,21 +454,16 @@ function buildPrintRx(rx,qrDataUrl='',isPreview=false){
     '</header>'+
     (isPreview?'<div class="rx-a4-draft">PREVIEW — NOT SAVED</div>':'')+
     '<section class="rx-a4-patient">'+
-      '<div class="rx-a4-patient-line rx-a4-patient-primary">'+
-        '<span><b>Patient name :</b> '+escapeHtml(rx.patient||'—')+'</span>'+
-        '<span><b>Prescription no :</b> '+escapeHtml(rx.rxId||'—')+'</span>'+
-      '</div>'+
-      '<div class="rx-a4-patient-line rx-a4-patient-vitals">'+
-        '<span><b>Age :</b> '+escapeHtml(rx.age||'—')+'</span>'+
-        '<span><b>BP :</b> '+escapeHtml(rx.bp||'—')+'</span>'+
-        '<span><b>Weight :</b> '+escapeHtml(printWeight||'—')+'</span>'+
-        '<span><b>Temp :</b> '+escapeHtml(printTemperature||'—')+'</span>'+
-      '</div>'+
-      '<div class="rx-a4-patient-line rx-a4-patient-contact">'+
-        '<span><b>Date :</b> '+escapeHtml(printDate||'—')+'</span>'+
-        '<span><b>Phone :</b> '+escapeHtml(rx.phone&&rx.phone!=='+8801'?rx.phone:'—')+'</span>'+
-      '</div>'+
-      '<div class="rx-a4-patient-complaint"><b>Complain :</b> '+escapeHtml(rx.complaint||'')+'</div>'+
+      '<div class="rx-a4-field rx-a4-field-wide"><span>Patient name</span><strong>'+escapeHtml(rx.patient||'—')+'</strong></div>'+
+      '<div class="rx-a4-field rx-a4-field-phone"><span>Phone</span><strong>'+escapeHtml(rx.phone&&rx.phone!=='+8801'?rx.phone:'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>Age</span><strong>'+escapeHtml(rx.age||'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>Gender</span><strong>'+escapeHtml(rx.gender||'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>BP</span><strong>'+escapeHtml(rx.bp||'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>Weight</span><strong>'+escapeHtml(rx.weight||'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>Temp</span><strong>'+escapeHtml(rx.temp||'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>Date</span><strong>'+escapeHtml(rx.dateStr)+'</strong></div>'+
+      '<div class="rx-a4-field rx-a4-field-rxid"><span>Prescription no</span><strong>'+escapeHtml(rx.rxId)+'</strong></div>'+
+      (rx.complaint?'<div class="rx-a4-field rx-a4-field-wide"><span>Complaint / Diagnosis</span><strong>'+escapeHtml(rx.complaint)+'</strong></div>':'')+
     '</section>'+
     '<div class="rx-a4-mark">℞</div>'+
     '<table class="rxmt rx-a4-meds">'+

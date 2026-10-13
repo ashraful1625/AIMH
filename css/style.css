@@ -207,15 +207,16 @@ input[disabled],select[disabled]{background:#f0f0f0;color:#999;cursor:not-allowe
 .rx-a4-clinic-bn{font-family:'Noto Serif Bengali',serif;font-size:13pt;font-weight:700;line-height:1.4;color:#1f5a47}
 .rx-a4-qr{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1mm;text-align:center}
 .rx-a4-qr img,.rx-a4-qr-placeholder{display:block;width:28mm;height:28mm;background:#fff;object-fit:contain}
+.rx-a4-qr small{font-size:6.5pt;color:#6b736f}
 .rx-a4-qr-placeholder{display:grid;place-items:center;border:1px dashed #b9c2bd;color:#6b736f;font-family:'Lora',serif;font-size:16pt}
 .rx-a4-draft{text-align:center;margin-top:2mm;color:#a65d00;font-family:'DM Sans',sans-serif;font-size:8pt;font-weight:700;letter-spacing:.5px}
-.rx-a4-patient{display:flex;flex-direction:column;gap:2mm;margin-top:4mm;padding:3mm 4mm;border:1px solid #b9c2bd;border-radius:3px;font-size:8.5pt;line-height:1.35}
-.rx-a4-patient-line{display:grid;gap:3mm;min-width:0}
-.rx-a4-patient-primary{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-.rx-a4-patient-vitals{grid-template-columns:repeat(4,minmax(0,1fr))}
-.rx-a4-patient-contact{grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr)}
-.rx-a4-patient-line span,.rx-a4-patient-complaint{min-width:0;overflow-wrap:anywhere}
-.rx-a4-patient b{font-family:'DM Sans',sans-serif;font-weight:700}
+.rx-a4-patient{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:2.5mm 4mm;margin-top:4mm;padding:3mm 4mm;border:1px solid #b9c2bd;border-radius:3px}
+.rx-a4-field{display:flex;flex-direction:column;gap:1px;min-width:0;overflow-wrap:anywhere}
+.rx-a4-field span,.rx-a4-label{font-family:'DM Sans',sans-serif;font-size:7.5pt;color:#6b736f}
+.rx-a4-field strong{font-size:9pt;font-weight:400;white-space:pre-wrap}
+.rx-a4-field-wide{grid-column:span 3}
+.rx-a4-field-phone{grid-column:span 2}
+.rx-a4-field-rxid{grid-column:span 1}
 .rx-a4-mark{margin:3mm 0 1mm;color:#1f5a47;font-family:'Lora',serif;font-size:24pt;font-weight:700;line-height:1}
 .rx-a4-meds{margin-top:0;border-collapse:collapse;font-family:'Lora',Georgia,serif;font-size:8pt}
 .rx-a4-meds th{padding:1mm .5mm 1.5mm;border-bottom:1px solid #1c1f1e;background:#fff;color:#6b736f;font-family:'DM Sans',sans-serif;font-size:7pt;font-weight:600;line-height:1.2;text-align:center}
