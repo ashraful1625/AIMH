@@ -155,23 +155,17 @@ function addMedRow(){
   return tr;
 }
 
-function onMedDaysKey(e){
-  if(e.key!=='Enter' || e.isComposing || !e.currentTarget.value.trim()) return;
-  e.preventDefault();
-  const dayFields=[...document.querySelectorAll('#rxmeds .mdays')];
-  const next=dayFields[dayFields.indexOf(e.currentTarget)+1];
-  if(next){
-    next.focus();
-    return;
-  }
-  addMedRow()?.querySelector('.mdays')?.focus();
-}
-
 function onMedKey(e){
   if(e.key!=='Enter' || e.isComposing) return;
   e.preventDefault();
   if(!e.currentTarget.value.trim()) return;
   document.querySelectorAll('.mdrop').forEach(d=>d.classList.remove('on'));
+  e.currentTarget.closest('tr').querySelector('.mdays').focus();
+}
+
+function onMedDaysKey(e){
+  if(e.key!=='Enter' || e.isComposing) return;
+  e.preventDefault();
   addMedRow()?.querySelector('.mi')?.focus();
 }
 
@@ -525,16 +519,37 @@ window.clearRx=function(){
 };
 
 function initPage(){
-  document.getElementById('rxname').addEventListener('keydown',e=>{
-    if(e.key!=='Enter' || e.isComposing) return;
-    e.preventDefault();
-    document.getElementById('rxphone').focus();
-  });
   document.getElementById('addmedbtn').addEventListener('click',addMedRow);
   document.getElementById('saverxbtn').addEventListener('click',window.saveRx);
   document.getElementById('previewrxbtn').addEventListener('click',window.previewRx);
   document.getElementById('clearrxbtn').addEventListener('click',window.clearRx);
   document.getElementById('rxdoc').addEventListener('change',window.updDocInfo);
+  const enterTargets={
+    rxname:'rxphone',
+    rxphone:'rxagenum',
+    rxagenum:'rxgender',
+    rxgender:'rxbp',
+    rxbp:'rxwt',
+    rxwt:'rxtemp',
+    rxtemp:'rxcc',
+    rxcc:'.mi',
+    rxadv:'rxnv',
+    rxnv:'rxfee'
+  };
+  document.addEventListener('keydown',event=>{
+    if(event.key!=='Enter' || event.isComposing || event.shiftKey) return;
+    const target=event.target;
+    if(!(target instanceof HTMLElement)) return;
+    if(target.id==='rxfee'){
+      event.preventDefault();
+      document.getElementById('saverxbtn').click();
+      return;
+    }
+    const next=enterTargets[target.id];
+    if(!next || (target instanceof HTMLTextAreaElement && event.shiftKey)) return;
+    event.preventDefault();
+    document.querySelector(next.startsWith('.')?next:'#'+next)?.focus();
+  });
   addMedRow();
   genRxId();
 }
