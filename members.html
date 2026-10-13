@@ -51,6 +51,7 @@
       <div class="fg full"><label for="ndemail">Doctor's Email</label><input type="email" id="ndemail" placeholder="doctor@example.com" maxlength="254" autocomplete="off" required></div>
       <div class="fg full"><label for="ndpassword">Temporary Password</label><input type="password" id="ndpassword" placeholder="At least 6 characters" minlength="6" autocomplete="new-password" required></div>
       <div class="fg full"><label for="nddeg">Qualifications</label><input type="text" id="nddeg" placeholder="MBBS, BDS..." maxlength="160"></div>
+      <div class="fg full"><label for="ndreg">Gov't Registration No.</label><input type="text" id="ndreg" placeholder="Registration number" maxlength="40"></div>
       <div class="fg"><label for="ndspec">Speciality</label><input type="text" id="ndspec" placeholder="Skin, General..." maxlength="160"></div>
       <div class="fg"><label for="ndphone">Phone</label><input type="tel" id="ndphone" placeholder="01XXXXXXXXX" maxlength="30"></div>
       <div class="fg full"><label for="nddays">Chamber Days/Time</label><input type="text" id="nddays" placeholder="e.g. Sat-Thu 5pm-9pm" maxlength="100"></div>
@@ -83,7 +84,7 @@
 <div id="pa"></div>
 
 <script type="module">
-import { loadMembers, requireRole, renderHeader, openModal, closeModal, sync, fdel, createDoctorAccount, createStaffAccount, revokeMemberAccess, DOCS, STAFF } from './js/core.js';
+import { loadMembers, requireRole, renderHeader, openModal, closeModal, sync, fdel, fupd, createDoctorAccount, createStaffAccount, revokeMemberAccess, DOCS, STAFF } from './js/core.js';
 
 const session = await requireRole(['admin']);
 if(session){
@@ -141,7 +142,7 @@ async function refreshMembers(){
 function renderDocList(){
   const el=document.getElementById('doclist');
   document.getElementById('doctor-count').textContent='('+DOCS.length+')';
-  const doctors=DOCS.filter(d=>matchesSearch([d.name,d.deg,d.spec,d.phone,d.days]));
+  const doctors=DOCS.filter(d=>matchesSearch([d.name,d.deg,d.regNo,d.spec,d.phone,d.days]));
   if(!doctors.length){
     el.innerHTML='<div class="al ali">'+(DOCS.length?'No doctors match your search.':'No doctor profiles yet. Use “Add Doctor” to create one.')+'</div>';
     return;
@@ -152,6 +153,7 @@ function renderDocList(){
       '<div class="dname">'+escapeHTML(d.name)+'</div>'+
       '<div class="ddeg">'+escapeHTML(d.deg)+(d.spec?' · '+escapeHTML(d.spec):'')+'</div>'+
       '<div class="dph">📞 '+escapeHTML(d.phone||'—')+(d.days?' · '+escapeHTML(d.days):'')+'</div>'+
+      '<div class="dreg"><input type="text" maxlength="40" aria-label="Government registration number for '+escapeHTML(d.name)+'" placeholder="Gov\'t reg no" value="'+escapeHTML(d.regNo||'')+'" data-doctor-reg="'+escapeHTML(d.id)+'"><button class="btn bs bsm" type="button" data-save-doctor-reg="'+escapeHTML(d.id)+'">Save</button></div>'+
       (d.isFounder?'<span class="badge bok" style="margin-top:3px">Founder</span>':'')+
       (d.isCoFounder?'<span class="badge" style="background:var(--gold-l);color:var(--gold);margin-top:3px">Co-Founder</span>':'')+
     '</div>'+
@@ -160,7 +162,27 @@ function renderDocList(){
   el.querySelectorAll('[data-delete-doctor]').forEach(button=>{
     button.addEventListener('click',()=>window.delDoc(button.dataset.deleteDoctor));
   });
+  el.querySelectorAll('[data-save-doctor-reg]').forEach(button=>{
+    button.addEventListener('click',()=>window.saveDoctorRegNo(button.dataset.saveDoctorReg));
+  });
 }
+
+window.saveDoctorRegNo=async function(id){
+  const selector='[data-doctor-reg="'+CSS.escape(id)+'"]';
+  const input=document.querySelector(selector);
+  if(!input) return;
+  const regNo=input.value.trim();
+  const button=document.querySelector('[data-save-doctor-reg="'+CSS.escape(id)+'"]');
+  button.disabled=true;
+  try{
+    await fupd('doctors',id,{regNo});
+    await refreshMembers();
+    sync('✅ Doctor registration number saved.');
+  }catch(error){
+    console.error('Could not save doctor registration number:',error);
+    alert('❌ Could not save doctor registration number: '+(error.message||'Unknown error'));
+  }finally{ button.disabled=false; }
+};
 
 window.saveDoc=async function(){
   const name=document.getElementById('ndname').value.trim();
@@ -175,13 +197,14 @@ window.saveDoc=async function(){
     await createDoctorAccount({
       email,password,name,
       deg:document.getElementById('nddeg').value.trim(),
+      regNo:document.getElementById('ndreg').value.trim(),
       spec:document.getElementById('ndspec').value.trim(),
       phone:document.getElementById('ndphone').value.trim(),
       days:document.getElementById('nddays').value.trim()
     });
     await refreshMembers();
     closeModal('mdoc');
-    ['ndname','ndemail','ndpassword','nddeg','ndspec','ndphone','nddays'].forEach(id=>{ document.getElementById(id).value=''; });
+    ['ndname','ndemail','ndpassword','nddeg','ndreg','ndspec','ndphone','nddays'].forEach(id=>{ document.getElementById(id).value=''; });
     sync('✅ Doctor account and profile added!');
     alert('Doctor account created. Share the email and temporary password with the doctor securely.');
   }catch(e){ console.error('saveDoc error:',e); alert('❌ Failed to create doctor account: '+(e.message||'Unknown error')); }

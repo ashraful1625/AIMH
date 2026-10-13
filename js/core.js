@@ -78,7 +78,7 @@ export async function loadMembers(){
   STAFF=staff.docs.map(d=>({id:d.id,...d.data()}));
 }
 
-export async function createDoctorAccount({email,password,name,deg,spec,phone,days}){
+export async function createDoctorAccount({email,password,name,deg,regNo,spec,phone,days}){
   if(session?.role!=='admin') throw new Error('Only an administrator can add doctor accounts.');
   const provisioner=initializeApp(firebaseConfig,'aimh-doctor-provisioner');
   const provisionerAuth=getAuth(provisioner);
@@ -89,7 +89,7 @@ export async function createDoctorAccount({email,password,name,deg,spec,phone,da
     const credential=await createUserWithEmailAndPassword(provisionerAuth,email,password);
     user=credential.user;
     const doctor=await fadd('doctors',{
-      name,deg,spec,phone,days,ca:new Date().toISOString()
+      name,deg,regNo:regNo||'',spec,phone,days,ca:new Date().toISOString()
     });
     doctorId=doctor.id;
     await fset('user_roles',user.uid,{

@@ -151,7 +151,20 @@ function addMedRow(){
     '<td><button class="rmb" type="button" onclick="remMedRow('+id+')">✕</button></td>';
   document.getElementById('rxmeds').appendChild(tr);
   tr.querySelector('.mi').addEventListener('keydown',onMedKey);
+  tr.querySelector('.mdays').addEventListener('keydown',onMedDaysKey);
   return tr;
+}
+
+function onMedDaysKey(e){
+  if(e.key!=='Enter' || e.isComposing || !e.currentTarget.value.trim()) return;
+  e.preventDefault();
+  const dayFields=[...document.querySelectorAll('#rxmeds .mdays')];
+  const next=dayFields[dayFields.indexOf(e.currentTarget)+1];
+  if(next){
+    next.focus();
+    return;
+  }
+  addMedRow()?.querySelector('.mdays')?.focus();
 }
 
 function onMedKey(e){
@@ -280,6 +293,7 @@ function getRxData(){
     doctorId:docId,
     doctorName:asText(docObj?.name,100),
     doctorDeg:asText(docObj?.deg,160),
+    doctorRegNo:asText(docObj?.regNo,40),
     doctorSpec:asText(docObj?.spec,160),
     doctorPhone:asText(docObj?.phone,30),
     meds
@@ -291,12 +305,12 @@ function prescriptionValidationError(data){
     rxId:[40,true],dateStr:[40,false],patient:[120,true],phone:[30,false],age:[30,false],
     gender:[30,false],bp:[40,false],weight:[40,false],fever:[40,false],temp:[40,false],
     complaint:[2000,false],advice:[2000,false],nextVisit:[40,false],doctorId:[128,false],
-    doctorName:[100,false],doctorDeg:[160,false],doctorSpec:[160,false],doctorPhone:[30,false],
+    doctorName:[100,false],doctorDeg:[160,false],doctorRegNo:[40,false],doctorSpec:[160,false],doctorPhone:[30,false],
     savedAt:[40,false]
   };
   const allowedFields=[
     'rxId','date','dateStr','patient','phone','age','gender','bp','weight','fever','temp',
-    'complaint','advice','nextVisit','fee','doctorId','doctorName','doctorDeg','doctorSpec',
+    'complaint','advice','nextVisit','fee','doctorId','doctorName','doctorDeg','doctorRegNo','doctorSpec',
     'doctorPhone','meds','savedAt'
   ];
   if(Object.keys(data).some(key=>!allowedFields.includes(key))
@@ -419,6 +433,10 @@ function escapeHtml(value){
 
 function buildPrintRx(rx,qrDataUrl='',isPreview=false){
   const check=v=>'<td class="rx-check">'+(v?'✓':'')+'</td>';
+  const dateMatch=String(rx.date||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const printDate=dateMatch?dateMatch[3]+'/'+dateMatch[2]+'/'+dateMatch[1]:(rx.dateStr||'—');
+  const printWeight=rx.weight?.trim()?rx.weight.trim().replace(/\s*kg$/i,'')+' KG':'—';
+  const printTemp=rx.temp?.trim()?rx.temp.trim().replace(/\s*(?:°|degrees?)?\s*f$/i,'')+'°F':'—';
   const rows=rx.meds.map((m,i)=>
     '<tr><td class="rx-index">'+(i+1)+'</td>'+
     '<td class="rx-medicine">'+escapeHtml(m.name)+'</td>'+
@@ -436,14 +454,14 @@ function buildPrintRx(rx,qrDataUrl='',isPreview=false){
     '<header class="rx-a4-head">'+
       '<section class="rx-a4-doctor">'+
         '<div class="rx-a4-doctor-name">'+escapeHtml(rx.doctorName)+'</div>'+
-        (rx.doctorDeg?'<div>'+escapeHtml(rx.doctorDeg)+'</div>':'')+
-        (rx.doctorSpec?'<div>'+escapeHtml(rx.doctorSpec)+'</div>':'')+
-        (rx.doctorPhone?'<div>'+escapeHtml(rx.doctorPhone)+'</div>':'')+
+        '<div>'+escapeHtml(rx.doctorDeg||'—')+'</div>'+
+        '<div>Gov\'t reg no : '+escapeHtml(rx.doctorRegNo||'—')+'</div>'+
+        '<div>Expertise : '+escapeHtml(rx.doctorSpec||'—')+'</div>'+
+        '<div>Phone : '+escapeHtml(rx.doctorPhone||'—')+'</div>'+
       '</section>'+
       '<section class="rx-a4-qr">'+
         (isPreview?'<div class="rx-a4-qr-placeholder">QR</div>':
           '<img src="'+escapeHtml(qrDataUrl)+'" alt="Prescription QR code containing the prescription number and medicine details">')+
-        '<small>Scan for prescription &amp; medicines</small>'+
       '</section>'+
       '<section class="rx-a4-clinic">'+
         '<div class="rx-a4-clinic-bn">'+escapeHtml(CLINIC.localName)+'</div>'+
@@ -454,16 +472,23 @@ function buildPrintRx(rx,qrDataUrl='',isPreview=false){
     '</header>'+
     (isPreview?'<div class="rx-a4-draft">PREVIEW — NOT SAVED</div>':'')+
     '<section class="rx-a4-patient">'+
-      '<div class="rx-a4-field rx-a4-field-wide"><span>Patient name</span><strong>'+escapeHtml(rx.patient||'—')+'</strong></div>'+
-      '<div class="rx-a4-field rx-a4-field-phone"><span>Phone</span><strong>'+escapeHtml(rx.phone&&rx.phone!=='+8801'?rx.phone:'—')+'</strong></div>'+
-      '<div class="rx-a4-field"><span>Age</span><strong>'+escapeHtml(rx.age||'—')+'</strong></div>'+
-      '<div class="rx-a4-field"><span>Gender</span><strong>'+escapeHtml(rx.gender||'—')+'</strong></div>'+
-      '<div class="rx-a4-field"><span>BP</span><strong>'+escapeHtml(rx.bp||'—')+'</strong></div>'+
-      '<div class="rx-a4-field"><span>Weight</span><strong>'+escapeHtml(rx.weight||'—')+'</strong></div>'+
-      '<div class="rx-a4-field"><span>Temp</span><strong>'+escapeHtml(rx.temp||'—')+'</strong></div>'+
-      '<div class="rx-a4-field"><span>Date</span><strong>'+escapeHtml(rx.dateStr)+'</strong></div>'+
-      '<div class="rx-a4-field rx-a4-field-rxid"><span>Prescription no</span><strong>'+escapeHtml(rx.rxId)+'</strong></div>'+
-      (rx.complaint?'<div class="rx-a4-field rx-a4-field-wide"><span>Complaint / Diagnosis</span><strong>'+escapeHtml(rx.complaint)+'</strong></div>':'')+
+      '<div class="rx-a4-patient-row">'+
+        '<div class="rx-a4-patient-field"><span>Patient name :</span><strong>'+escapeHtml(rx.patient||'—')+'</strong></div>'+
+        '<div class="rx-a4-patient-field"><span>Prescription no :</span><strong>'+escapeHtml(rx.rxId||'—')+'</strong></div>'+
+      '</div>'+
+      '<div class="rx-a4-patient-row">'+
+        '<div class="rx-a4-patient-field"><span>Age :</span><strong>'+escapeHtml(rx.age||'—')+'</strong></div>'+
+        '<div class="rx-a4-patient-field"><span>BP :</span><strong>'+escapeHtml(rx.bp||'—')+'</strong></div>'+
+        '<div class="rx-a4-patient-field"><span>Weight :</span><strong>'+escapeHtml(printWeight)+'</strong></div>'+
+        '<div class="rx-a4-patient-field"><span>Temp :</span><strong>'+escapeHtml(printTemp)+'</strong></div>'+
+      '</div>'+
+      '<div class="rx-a4-patient-row">'+
+        '<div class="rx-a4-patient-field"><span>Date :</span><strong>'+escapeHtml(printDate)+'</strong></div>'+
+        '<div class="rx-a4-patient-field"><span>Phone :</span><strong>'+escapeHtml(rx.phone&&rx.phone!=='+8801'?rx.phone:'—')+'</strong></div>'+
+      '</div>'+
+      '<div class="rx-a4-patient-row rx-a4-complaint">'+
+        '<div class="rx-a4-patient-field"><span>Complain :</span><strong>'+escapeHtml(rx.complaint||'')+'</strong></div>'+
+      '</div>'+
     '</section>'+
     '<div class="rx-a4-mark">℞</div>'+
     '<table class="rxmt rx-a4-meds">'+
@@ -500,6 +525,11 @@ window.clearRx=function(){
 };
 
 function initPage(){
+  document.getElementById('rxname').addEventListener('keydown',e=>{
+    if(e.key!=='Enter' || e.isComposing) return;
+    e.preventDefault();
+    document.getElementById('rxphone').focus();
+  });
   document.getElementById('addmedbtn').addEventListener('click',addMedRow);
   document.getElementById('saverxbtn').addEventListener('click',window.saveRx);
   document.getElementById('previewrxbtn').addEventListener('click',window.previewRx);

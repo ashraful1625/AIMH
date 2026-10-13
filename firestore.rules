@@ -4,10 +4,10 @@ service cloud.firestore {
     // Assumed models (all timestamps below are legacy ISO strings):
     // user_roles/{uid}: uid, name, role, optional profileId.
     // inventory: name, type, company, stock, buy, sell, reorder, ca.
-    // doctors: name, optional deg/spec/phone/days/isFounder/isCoFounder, ca.
+    // doctors: name, optional deg/regNo/spec/phone/days/isFounder/isCoFounder, ca.
     // staff: name, optional role/phone, ca.
     // patients: name, phone, age, gender, visits, lastVisit, lastRxId, ca.
-    // prescriptions: rxId, dates, patient/doctor details, vitals, notes, fee,
+    // prescriptions: rxId, dates, patient/doctor details (including doctorRegNo), vitals, notes, fee,
     //   meds (bounded list of typed medication maps), savedAt.
     // bills: rxId, patient/doctor details, dates, total, services, savedAt.
     // company_bills: name, date, type, bill, adj, pay, sample, ca.
@@ -91,10 +91,11 @@ service cloud.firestore {
     }
 
     function validDoctor(data) {
-      return hasOnlyKeys(data, ['name', 'deg', 'spec', 'phone', 'days', 'isFounder', 'isCoFounder', 'ca'])
+      return hasOnlyKeys(data, ['name', 'deg', 'regNo', 'spec', 'phone', 'days', 'isFounder', 'isCoFounder', 'ca'])
         && data.keys().hasAll(['name', 'ca'])
         && validText(data, 'name', 100) && data.name.size() > 0
         && optionalText(data, 'deg', 160)
+        && optionalText(data, 'regNo', 40)
         && optionalText(data, 'spec', 160)
         && optionalText(data, 'phone', 30)
         && optionalText(data, 'days', 100)
@@ -165,7 +166,7 @@ service cloud.firestore {
       return hasOnlyKeys(data, [
           'rxId', 'date', 'dateStr', 'patient', 'phone', 'age', 'gender', 'bp', 'weight',
           'fever', 'temp', 'complaint', 'advice', 'nextVisit', 'fee', 'doctorId',
-          'doctorName', 'doctorDeg', 'doctorSpec', 'doctorPhone', 'meds', 'savedAt'
+          'doctorName', 'doctorDeg', 'doctorRegNo', 'doctorSpec', 'doctorPhone', 'meds', 'savedAt'
         ])
         && data.keys().hasAll([
           'rxId', 'date', 'dateStr', 'patient', 'phone', 'age', 'gender', 'bp', 'weight',
@@ -190,6 +191,7 @@ service cloud.firestore {
         && validText(data, 'doctorId', 128)
         && validText(data, 'doctorName', 100)
         && optionalTextValue(data.doctorDeg, 160)
+        && optionalText(data, 'doctorRegNo', 40)
         && optionalTextValue(data.doctorSpec, 160)
         && optionalTextValue(data.doctorPhone, 30)
         && validMeds(data.meds)
