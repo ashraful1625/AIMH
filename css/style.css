@@ -203,6 +203,8 @@ input[disabled],select[disabled]{background:#f0f0f0;color:#999;cursor:not-allowe
 .rx-a4-head{display:grid;grid-template-columns:minmax(0,1fr) 30mm minmax(0,1fr);gap:4mm;align-items:stretch;padding-bottom:4mm;border-bottom:1.5px solid #1c1f1e;font-size:9pt;line-height:1.35}
 .rx-a4-doctor,.rx-a4-clinic{display:flex;flex-direction:column;gap:1mm;min-width:0}
 .rx-a4-doctor-name,.rx-a4-clinic-name{font-size:13pt;font-weight:700;line-height:1.3;color:#1c1f1e;overflow-wrap:anywhere}
+.rx-a4-doctor-name,.rx-a4-doctor>div:not(.rx-a4-doctor-name){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rx-a4-doctor>div:not(.rx-a4-doctor-name){font-size:8pt}
 .rx-a4-clinic{text-align:right}
 .rx-a4-clinic-bn{font-family:'Noto Serif Bengali',serif;font-size:13pt;font-weight:700;line-height:1.4;color:#1f5a47}
 .rx-a4-qr{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1mm;text-align:center}
@@ -210,11 +212,14 @@ input[disabled],select[disabled]{background:#f0f0f0;color:#999;cursor:not-allowe
 .rx-a4-qr-placeholder{display:grid;place-items:center;border:1px dashed #b9c2bd;color:#6b736f;font-family:'Lora',serif;font-size:16pt}
 .rx-a4-draft{text-align:center;margin-top:2mm;color:#a65d00;font-family:'DM Sans',sans-serif;font-size:8pt;font-weight:700;letter-spacing:.5px}
 .rx-a4-patient{display:flex;flex-direction:column;gap:2mm;margin-top:4mm;padding:3mm 4mm;border:1px solid #b9c2bd;border-radius:3px}
-.rx-a4-patient-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:1mm 5mm}
+.rx-a4-patient-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:baseline;gap:1mm 5mm}
+.rx-a4-patient-row:nth-child(2){grid-template-columns:16fr 22fr 30fr 32fr}
+.rx-a4-patient-row:nth-child(3){grid-template-columns:35fr 65fr}
 .rx-a4-patient-field{display:flex;align-items:baseline;gap:1mm;min-width:0;overflow-wrap:anywhere}
 .rx-a4-patient-field span,.rx-a4-label{font-family:'DM Sans',sans-serif;font-size:7.5pt;color:#6b736f;white-space:nowrap}
-.rx-a4-patient-field strong{font-size:9pt;font-weight:400;white-space:pre-wrap;overflow-wrap:anywhere}
-.rx-a4-complaint .rx-a4-patient-field{width:100%}
+.rx-a4-patient-field strong{min-width:0;font-size:9pt;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rx-a4-complaint{grid-template-columns:minmax(0,1fr)}
+.rx-a4-complaint .rx-a4-patient-field{min-width:0}
 .rx-a4-complaint strong{flex:1}
 .rx-a4-mark{margin:3mm 0 1mm;color:#1f5a47;font-family:'Lora',serif;font-size:24pt;font-weight:700;line-height:1}
 .rx-a4-meds{margin-top:0;border-collapse:collapse;font-family:'Lora',Georgia,serif;font-size:8pt}
