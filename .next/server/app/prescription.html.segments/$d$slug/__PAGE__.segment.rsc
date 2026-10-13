@@ -1,0 +1,511 @@
+1:"$Sreact.fragment"
+2:"/_next/static/chunks/3jiel8xif5lpm.js"
+3:I[39756,["$2"],"default"]
+4:I[37457,["$2"],"default"]
+5:I[43880,["$2"],"Analytics"]
+6:I[57215,["$2"],"SpeedInsights"]
+d:"/_next/static/chunks/1wsrh4atp3cd0.js"
+e:I[15365,["$2","$d"],"default"]
+13:"ViewportBoundary"
+14:I[97367,["$2"],"$13"]
+15:"MetadataBoundary"
+16:I[97367,["$2"],"$15"]
+17:"$Sreact.suspense"
+8:X
+b:X
+b:C
+f:T5a9c,<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Prescription · A Islam Medical Hall</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <div class="hdr" id="hdr"></div>
+  <div class="cnt">
+    <h1 class="ptitle">📋 Prescription <span id="rxid" style="display:inline-block;max-width:100%;overflow-wrap:anywhere;font-size:12px;font-weight:400;color:var(--t3)"></span></h1>
+
+    <div class="card">
+      <div class="ct">👤 Patient Info <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">রোগীর তথ্য</span></div>
+      <div class="docsel">
+        <span>👨‍⚕️</span>
+        <select id="rxdoc" onchange="updDocInfo()"><option value="">— Select Doctor —</option></select>
+      </div>
+      <div id="rxdocinfo" style="font-size:11px;color:var(--t3);margin-bottom:10px;padding:0 2px"></div>
+      <div class="row r2">
+        <div class="fg"><label>Patient Name <span class="lbn">রোগীর নাম</span></label><input type="text" id="rxname" placeholder="Full name"></div>
+        <div class="fg"><label>Phone <span class="lbn">মোবাইল</span></label><input type="tel" id="rxphone" value="+8801" placeholder="+8801..."></div>
+      </div>
+      <div class="row r3">
+        <div class="fg">
+          <label>Age <span class="lbn">বয়স</span></label>
+          <div class="agerow">
+            <input type="number" id="rxagenum" min="0" max="120" placeholder="25">
+            <select id="rxageunit"><option value="years">Yr/বছর</option><option value="months">Mo/মাস</option></select>
+          </div>
+        </div>
+        <div class="fg"><label>Gender <span class="lbn">লিঙ্গ</span></label>
+          <select id="rxgender"><option value="">Select...</option><option value="Male">Male/পুরুষ</option><option value="Female">Female/মহিলা</option><option value="Child">Child/শিশু</option></select>
+        </div>
+        <div class="fg"><label>BP <span class="lbn">রক্তচাপ</span></label><input type="text" id="rxbp" placeholder="120/80"></div>
+      </div>
+      <div class="row r2">
+        <div class="fg"><label>Weight <span class="lbn">ওজন</span></label><input type="text" id="rxwt" placeholder="55 kg"></div>
+        <div class="fg"><label>Temp <span class="lbn">তাপমাত্রা</span></label><input type="text" id="rxtemp" placeholder="98.4°F"></div>
+      </div>
+      <div class="fg"><label>Complaint / Diagnosis <span class="lbn">সমস্যা</span></label><textarea id="rxcc" placeholder="Chief complaint..."></textarea></div>
+    </div>
+
+    <div class="card">
+      <div class="ct">💊 Medicines <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">ওষুধ</span></div>
+      <div class="mtw">
+        <table class="mt">
+          <thead><tr>
+            <th style="width:22px">#</th>
+            <th style="min-width:165px;text-align:left;padding-left:7px">ওষুধ এর নাম</th>
+            <th style="width:38px">☀️<br><span style="font-size:8px">সকাল</span></th>
+            <th style="width:38px">🌤️<br><span style="font-size:8px">দুপুর</span></th>
+            <th style="width:38px">🌥️<br><span style="font-size:8px">বিকাল</span></th>
+            <th style="width:38px">🌙<br><span style="font-size:8px">রাত</span></th>
+            <th style="width:65px">খাবার</th>
+            <th style="width:48px">কতদিন</th>
+            <th style="width:26px"></th>
+          </tr></thead>
+          <tbody id="rxmeds"></tbody>
+        </table>
+      </div>
+      <button class="amb" type="button" id="addmedbtn">➕ Add Medicine / ওষুধ যোগ করুন</button>
+    </div>
+
+    <div class="card">
+      <div class="ct">📝 Advice & Follow-up</div>
+      <div class="row r2">
+        <div class="fg"><label>Advice <span class="lbn">পরামর্শ</span></label><textarea id="rxadv" placeholder="Doctor's advice..."></textarea></div>
+        <div class="fg">
+          <div class="fg" style="margin-bottom:8px"><label>Next Visit <span class="lbn">পরবর্তী ভিজিট</span></label>
+            <select id="rxnv"><option value="">No follow-up</option><option value="7">7 Days পর</option><option value="10">10 Days পর</option><option value="14">14 Days পর</option><option value="15">15 Days পর</option><option value="20">20 Days পর</option><option value="21">21 Days পর</option><option value="25">25 Days পর</option><option value="28">28 Days পর</option><option value="30">30 Days পর</option></select>
+          </div>
+          <div class="fg"><label>Fee ৳ <span class="lbn">ভিজিট ফি</span></label><input type="number" id="rxfee" value="0" min="0"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="brow">
+      <button class="btn bp" type="button" id="saverxbtn">💾 Save & Print</button>
+      <button class="btn bs" type="button" id="previewrxbtn">👁️ Preview</button>
+      <button class="btn bd" type="button" id="clearrxbtn">🗑️ Clear</button>
+    </div>
+  </div>
+</div>
+<div id="pa"></div>
+
+<script type="module">
+import { loadAll, requireRole, renderHeader, printHTML, sync, fadd, fcreate, fupd, INV, PTS, DOCS } from './js/core.js';
+
+const CLINIC = {
+  name:'A Islam Medical Hall',
+  localName:'এ ইসলাম মেডিকেল হল',
+  address:'Kasba Puratan Bazar, Kasba, Brahmanbaria',
+  phone:'01884794060'
+};
+
+let medRows=[], curRxId='', medRowSeq=0;
+
+function genRxId(){
+  const digits=new Uint8Array(16);
+  crypto.getRandomValues(digits);
+  curRxId=String(digits[0]%9+1);
+  for(let i=1;i<digits.length;i++) curRxId+=String(digits[i]%10);
+  document.getElementById('rxid').textContent='· '+curRxId;
+}
+
+function fillDocSel(){
+  const sel=document.getElementById('rxdoc');
+  sel.replaceChildren(new Option('— Select Doctor —',''));
+  DOCS.forEach(d=>{
+    sel.add(new Option(d.name+(d.spec?' ('+d.spec+')':''),d.id));
+  });
+  if(session.role==='doctor'){ sel.value=session.myDocId; sel.disabled=true; }
+  updDocInfo();
+}
+window.updDocInfo=function(){
+  const id=document.getElementById('rxdoc').value;
+  const d=DOCS.find(x=>x.id===id);
+  document.getElementById('rxdocinfo').textContent =
+    d ? (d.deg||'')+' · '+(d.spec||'')+(d.days?' · '+d.days:'') : '';
+};
+
+function addMedRow(){
+  if(medRows.length>=20){
+    alert('A prescription can contain up to 20 medicines.');
+    return;
+  }
+  const id=++medRowSeq;
+  medRows.push(id);
+  const tr=document.createElement('tr');
+  tr.id='mr-'+id;
+  tr.innerHTML=
+    '<td style="color:var(--t3);font-size:11px;font-weight:600">'+medRows.length+'</td>'+
+    '<td style="text-align:left;padding:5px 5px">'+
+      '<div class="mw">'+
+        '<input class="mi" type="text" placeholder="Search..." autocomplete="off"'+
+          ' oninput="doMedSearch(this,\'md'+id+'\')"'+
+          ' onfocus="doMedSearch(this,\'md'+id+'\')">'+
+        '<div class="mdrop" id="md'+id+'"></div>'+
+      '</div>'+
+    '</td>'+
+    '<td><div class="dc"><div class="dt" onclick="this.classList.toggle(\'on\');this.textContent=this.classList.contains(\'on\')?\'✓\':\'\'"></div></div></td>'+
+    '<td><div class="dc"><div class="dt" onclick="this.classList.toggle(\'on\');this.textContent=this.classList.contains(\'on\')?\'✓\':\'\'"></div></div></td>'+
+    '<td><div class="dc"><div class="dt" onclick="this.classList.toggle(\'on\');this.textContent=this.classList.contains(\'on\')?\'✓\':\'\'"></div></div></td>'+
+    '<td><div class="dc"><div class="dt" onclick="this.classList.toggle(\'on\');this.textContent=this.classList.contains(\'on\')?\'✓\':\'\'"></div></div></td>'+
+    '<td><select style="font-size:11px;padding:5px 3px"><option value="after">পরে</option><option value="before">আগে</option></select></td>'+
+    '<td><input class="mdays" type="number" min="1" max="90" placeholder="Days" style="width:44px;font-size:11px;text-align:center;padding:5px 3px"></td>'+
+    '<td><button class="rmb" type="button" onclick="remMedRow('+id+')">✕</button></td>';
+  document.getElementById('rxmeds').appendChild(tr);
+  tr.querySelector('.mi').addEventListener('keydown',onMedKey);
+  return tr;
+}
+
+function onMedKey(e){
+  if(e.key!=='Enter' || e.isComposing) return;
+  e.preventDefault();
+  if(!e.currentTarget.value.trim()) return;
+  document.querySelectorAll('.mdrop').forEach(d=>d.classList.remove('on'));
+  addMedRow()?.querySelector('.mi')?.focus();
+}
+
+window.remMedRow=function(id){
+  medRows=medRows.filter(r=>r!==id);
+  document.getElementById('mr-'+id)?.remove();
+  document.querySelectorAll('#rxmeds tr').forEach((tr,i)=>tr.cells[0].textContent=i+1);
+};
+
+window.doMedSearch=function(input,dropId){
+  const q=input.value.toLowerCase().trim();
+  const drop=document.getElementById(dropId);
+  if(!drop) return;
+  const inventory=INV.filter(m=>typeof m.name==='string' && m.name.trim());
+  const matches=q.length<1 ? inventory.slice(0,10) : inventory.filter(m=>m.name.toLowerCase().includes(q));
+  if(!matches.length){ drop.classList.remove('on'); return; }
+  const rect=input.getBoundingClientRect();
+  drop.style.cssText='left:'+rect.left+'px;top:'+(rect.bottom+2)+'px;width:'+Math.max(rect.width,230)+'px;position:fixed';
+  drop.replaceChildren();
+  matches.forEach(m=>{
+    const item=document.createElement('div');
+    item.className='mdi';
+    const details=document.createElement('div');
+    const name=document.createElement('div');
+    name.className='mdn';
+    name.textContent=m.name;
+    const meta=document.createElement('div');
+    meta.className='mdm';
+    meta.textContent=(m.type||'')+' · '+(m.company||'');
+    details.append(name,meta);
+    const stockDetails=document.createElement('div');
+    stockDetails.style.textAlign='right';
+    const stock=document.createElement('div');
+    stock.className='mds';
+    stock.textContent='Stk:'+(m.stock??0);
+    stockDetails.append(stock);
+    if(m.stock===0 || (typeof m.stock==='number' && typeof m.reorder==='number' && m.stock<=m.reorder)){
+      const status=document.createElement('span');
+      status.style.cssText='font-size:9px;color:'+(m.stock===0?'var(--red)':'var(--gold)');
+      status.textContent=m.stock===0?'Out':'Low';
+      stockDetails.append(status);
+    }
+    item.append(details,stockDetails);
+    item.addEventListener('click',()=>{
+      input.value=m.name;
+      drop.classList.remove('on');
+    });
+    drop.appendChild(item);
+  });
+  drop.classList.add('on');
+};
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.mw') && !e.target.closest('.mdrop'))
+    document.querySelectorAll('.mdrop').forEach(d=>d.classList.remove('on'));
+});
+
+function getAge(){
+  const n=document.getElementById('rxagenum').value;
+  const u=document.getElementById('rxageunit').value||'years';
+  return n ? (n+' '+u) : '';
+}
+
+function asText(value, maxLen){
+  return String(value ?? '').slice(0, maxLen);
+}
+
+function asInt(value, minValue, maxValue){
+  const n=parseInt(value,10);
+  if(!Number.isFinite(n)) return minValue;
+  return Math.min(maxValue, Math.max(minValue, n));
+}
+
+function asNum(value, minValue, maxValue){
+  const n=typeof value==='number' ? value : parseFloat(value);
+  if(!Number.isFinite(n)) return minValue;
+  return Math.min(maxValue, Math.max(minValue, n));
+}
+
+function getRxData(){
+  const docId=asText(document.getElementById('rxdoc').value,128);
+  const docObj=DOCS.find(d=>d.id===docId)||null;
+  const meds=[];
+  document.querySelectorAll('#rxmeds tr').forEach(tr=>{
+    const name=asText(tr.querySelector('.mi')?.value?.trim(),160);
+    if(!name) return;
+    const dots=tr.querySelectorAll('.dt');
+    const inv2=INV.find(m=>typeof m.name==='string' && m.name.toLowerCase()===name.toLowerCase());
+    const food=tr.querySelector('select')?.value==='before'?'before':'after';
+    const days=asInt(tr.querySelector('.mdays')?.value,0,10000);
+    meds.push({
+      name,
+      morning:!!dots[0]?.classList.contains('on'),
+      noon:!!dots[1]?.classList.contains('on'),
+      evening:!!dots[2]?.classList.contains('on'),
+      night:!!dots[3]?.classList.contains('on'),
+      food,
+      days,
+      unitPrice:asNum(inv2?.sell,0,10000000),
+      type:asText(inv2?.type ?? '',50)
+    });
+  });
+  return {
+    rxId:asText(curRxId,40),
+    date:new Date().toISOString().split('T')[0],
+    dateStr:asText(new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),40),
+    patient:asText(document.getElementById('rxname').value.trim(),120),
+    phone:asText(document.getElementById('rxphone').value.trim(),30),
+    age:asText(getAge(),30),
+    gender:asText(document.getElementById('rxgender').value,30),
+    bp:asText(document.getElementById('rxbp').value,40),
+    weight:asText(document.getElementById('rxwt').value,40),
+    fever:'',
+    temp:asText(document.getElementById('rxtemp').value,40),
+    complaint:asText(document.getElementById('rxcc').value,2000),
+    advice:asText(document.getElementById('rxadv').value,2000),
+    nextVisit:asText(document.getElementById('rxnv').value,40),
+    fee:asInt(document.getElementById('rxfee').value,0,10000000),
+    doctorId:docId,
+    doctorName:asText(docObj?.name,100),
+    doctorDeg:asText(docObj?.deg,160),
+    doctorSpec:asText(docObj?.spec,160),
+    doctorPhone:asText(docObj?.phone,30),
+    meds
+  };
+}
+
+async function persistRx(){
+  const rx=getRxData();
+  if(!rx.patient){ alert('⚠️ Enter patient name!'); return null; }
+  if(!rx.doctorId){ alert('⚠️ Please select a doctor!'); return null; }
+  let created=false, qrDataUrl='';
+  while(!created){
+    rx.rxId=curRxId;
+    qrDataUrl=await makeQrDataUrl(rx);
+    created=await fcreate('prescriptions',rx.rxId,{...rx,savedAt:new Date().toISOString()});
+    if(!created) genRxId();
+  }
+  let patientError=null;
+  try{
+    const ex=PTS.find(p=>p.phone===rx.phone && rx.phone!=='+8801');
+    if(!ex){
+      await fadd('patients',{name:rx.patient,phone:rx.phone,age:rx.age,gender:rx.gender,visits:1,lastVisit:rx.date,lastRxId:rx.rxId,ca:new Date().toISOString()});
+    }else{
+      await fupd('patients',ex.id,{visits:(ex.visits||0)+1,lastVisit:rx.date,lastRxId:rx.rxId,name:rx.patient,age:rx.age});
+    }
+  }catch(error){
+    patientError=error;
+    console.error('Prescription saved, but patient history update failed:',error);
+  }
+  sync('✅ Saved!');
+  return {rx,qrDataUrl,patientError};
+}
+
+window.saveRx=async function(){
+  const btn=document.getElementById('saverxbtn');
+  btn.innerHTML='<span class="sp"></span>Saving...'; btn.disabled=true;
+  try{
+    const saved=await persistRx();
+    if(!saved) return;
+    printHTML(buildPrintRx(saved.rx,saved.qrDataUrl),false);
+    clearRx(); genRxId();
+    if(saved.patientError) alert('✅ Prescription saved and printed, but patient history could not be updated: '+(saved.patientError.message||saved.patientError));
+  }catch(error){
+    console.error('saveRx error:',error);
+    const denied=error?.code==='permission-denied' || /insufficient permissions/i.test(error?.message||'');
+    alert(denied
+      ? '❌ Save failed: Firestore rejected this prescription. The prescription number is only stored if this write succeeds. Check that you are signed in as a doctor or admin, then try again.'
+      : '❌ Save failed: '+error.message);
+  }finally{ btn.innerHTML='💾 Save & Print'; btn.disabled=false; }
+};
+
+let qrCodeModulePromise;
+async function makeQrDataUrl(rx){
+  qrCodeModulePromise ||= import('https://esm.sh/qrcode@1.5.4');
+  const QRCode=await qrCodeModulePromise;
+  const qrPayload=JSON.stringify({
+    v:1,
+    rxId:rx.rxId,
+    meds:rx.meds.map(m=>[
+      m.name,
+      (m.morning?1:0)|(m.noon?2:0)|(m.evening?4:0)|(m.night?8:0),
+      m.food==='before'?1:0,
+      m.days
+    ])
+  });
+  return QRCode.toDataURL(qrPayload,{errorCorrectionLevel:'M',margin:1,width:360});
+}
+
+window.previewRx=async function(){
+  try{
+    printHTML(buildPrintRx(getRxData(),'',true),true,async()=>{
+      const saved=await persistRx();
+      if(!saved) return false;
+      const printContent=document.querySelector('#pa .rxp');
+      if(printContent) printContent.outerHTML=buildPrintRx(saved.rx,saved.qrDataUrl);
+      if(saved.patientError) alert('✅ Prescription saved, but patient history could not be updated: '+(saved.patientError.message||saved.patientError));
+      return true;
+    });
+  }catch(error){
+    console.error('Prescription preview failed:',error);
+    alert('❌ Preview failed: '+error.message);
+  }
+};
+
+function escapeHtml(value){
+  return String(value??'').replace(/[&<>"']/g,char=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[char]);
+}
+
+function buildPrintRx(rx,qrDataUrl='',isPreview=false){
+  const check=v=>'<td class="rx-check">'+(v?'✓':'')+'</td>';
+  const rows=rx.meds.map((m,i)=>
+    '<tr><td class="rx-index">'+(i+1)+'</td>'+
+    '<td class="rx-medicine">'+escapeHtml(m.name)+'</td>'+
+    check(m.morning)+check(m.noon)+check(m.evening)+check(m.night)+
+    '<td class="rx-food">'+(m.food==='before'?'আগে':'পরে')+'</td>'+
+    '<td class="rx-days">'+(m.days||'—')+'</td></tr>'
+  ).join('');
+  let nv='';
+  if(rx.nextVisit){
+    const d=new Date(rx.date); d.setDate(d.getDate()+parseInt(rx.nextVisit));
+    nv=escapeHtml(rx.nextVisit)+' days'+
+      ' <span class="rx-next-date">'+d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+'</span>';
+  }
+  return '<article class="rxp rx-a4">'+
+    '<header class="rx-a4-head">'+
+      '<section class="rx-a4-doctor">'+
+        '<div class="rx-a4-doctor-name">'+escapeHtml(rx.doctorName)+'</div>'+
+        (rx.doctorDeg?'<div>'+escapeHtml(rx.doctorDeg)+'</div>':'')+
+        (rx.doctorSpec?'<div>'+escapeHtml(rx.doctorSpec)+'</div>':'')+
+        (rx.doctorPhone?'<div>'+escapeHtml(rx.doctorPhone)+'</div>':'')+
+      '</section>'+
+      '<section class="rx-a4-qr">'+
+        (isPreview?'<div class="rx-a4-qr-placeholder">QR</div>':
+          '<img src="'+escapeHtml(qrDataUrl)+'" alt="Prescription QR code containing the prescription number and medicine details">')+
+        '<small>Scan for prescription &amp; medicines</small>'+
+      '</section>'+
+      '<section class="rx-a4-clinic">'+
+        '<div class="rx-a4-clinic-bn">'+escapeHtml(CLINIC.localName)+'</div>'+
+        '<div class="rx-a4-clinic-name">'+escapeHtml(CLINIC.name)+'</div>'+
+        '<div>'+escapeHtml(CLINIC.address)+'</div>'+
+        '<div>'+escapeHtml(CLINIC.phone)+'</div>'+
+      '</section>'+
+    '</header>'+
+    (isPreview?'<div class="rx-a4-draft">PREVIEW — NOT SAVED</div>':'')+
+    '<section class="rx-a4-patient">'+
+      '<div class="rx-a4-field rx-a4-field-wide"><span>Patient name</span><strong>'+escapeHtml(rx.patient||'—')+'</strong></div>'+
+      '<div class="rx-a4-field rx-a4-field-phone"><span>Phone</span><strong>'+escapeHtml(rx.phone&&rx.phone!=='+8801'?rx.phone:'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>Age</span><strong>'+escapeHtml(rx.age||'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>Gender</span><strong>'+escapeHtml(rx.gender||'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>BP</span><strong>'+escapeHtml(rx.bp||'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>Weight</span><strong>'+escapeHtml(rx.weight||'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>Temp</span><strong>'+escapeHtml(rx.temp||'—')+'</strong></div>'+
+      '<div class="rx-a4-field"><span>Date</span><strong>'+escapeHtml(rx.dateStr)+'</strong></div>'+
+      '<div class="rx-a4-field rx-a4-field-rxid"><span>Prescription no</span><strong>'+escapeHtml(rx.rxId)+'</strong></div>'+
+      (rx.complaint?'<div class="rx-a4-field rx-a4-field-wide"><span>Complaint / Diagnosis</span><strong>'+escapeHtml(rx.complaint)+'</strong></div>':'')+
+    '</section>'+
+    '<div class="rx-a4-mark">℞</div>'+
+    '<table class="rxmt rx-a4-meds">'+
+      '<thead><tr><th class="rx-index">#</th><th class="rx-medicine">ওষুধ এর নাম</th><th>সকাল</th><th>দুপুর</th><th>বিকাল</th><th>রাত</th><th>খাবার</th><th>কতদিন</th></tr></thead>'+
+      '<tbody>'+(rows||'<tr><td colspan="8" class="rx-a4-empty">No medicines prescribed</td></tr>')+'</tbody>'+
+    '</table>'+
+    '<footer class="rx-a4-foot">'+
+      '<section class="rx-a4-advice">'+
+        '<div class="rx-a4-label">Advice</div>'+
+        '<div class="rx-a4-advice-text">'+escapeHtml(rx.advice||'')+'</div>'+
+        (nv?'<div class="rx-a4-next"><b>Next visit after</b> '+nv+'</div>':'')+
+      '</section>'+
+      '<section class="rx-a4-sign">'+
+        '<div class="rx-a4-sign-line"></div>'+
+        '<div class="rx-a4-label">Signature</div>'+
+        '<div class="rx-a4-sign-name">'+escapeHtml(rx.doctorName)+'</div>'+
+        '<div class="rx-a4-sign-fee">Consultation fee: ৳'+escapeHtml(rx.fee)+'</div>'+
+      '</section>'+
+    '</footer>'+
+  '</article>';
+}
+
+window.clearRx=function(){
+  ['rxname','rxbp','rxwt','rxtemp','rxcc','rxadv'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('rxphone').value='+8801';
+  document.getElementById('rxagenum').value='';
+  document.getElementById('rxageunit').value='years';
+  document.getElementById('rxgender').value='';
+  document.getElementById('rxnv').value='';
+  document.getElementById('rxfee').value='0';
+  document.getElementById('rxmeds').innerHTML='';
+  medRows=[];
+  addMedRow();
+};
+
+function initPage(){
+  document.getElementById('addmedbtn').addEventListener('click',addMedRow);
+  document.getElementById('saverxbtn').addEventListener('click',window.saveRx);
+  document.getElementById('previewrxbtn').addEventListener('click',window.previewRx);
+  document.getElementById('clearrxbtn').addEventListener('click',window.clearRx);
+  document.getElementById('rxdoc').addEventListener('change',window.updDocInfo);
+  addMedRow();
+  genRxId();
+}
+
+initPage();
+const session=await requireRole(['doctor','admin']);
+if(session){
+  document.getElementById('app').classList.add('on');
+  try{
+    await loadAll();
+    fillDocSel();
+  }catch(error){
+    console.error('Prescription data could not be loaded:',error);
+    alert('Some prescription data could not be loaded: '+(error.message||error)+
+      '. The form is available, but check the connection before saving.');
+  }
+  renderHeader();
+}
+</script>
+</body>
+</html>c:[["children",{"s":"__PAGE__","h":160,"d":{"r":["$","$1","c",{"children":[["$","$Le",null,{"html":"$f"}],["$L10"],"$L11"]}],"p":"$@12","v":null,"s":"$8"}}]]
+9:[["children",{"s":{"n":"slug","t":"d","k":"prescription.html","s":["css","js"]},"h":96,"d":{"r":["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}]}]]}],"p":"$@a","v":"$b","s":"$8"},"c":"$Qc"}]]
+0:{"t":{"t":{"s":"","h":80,"d":{"r":["$","$1","c",{"children":[[["$","script","script-0",{"src":"/_next/static/chunks/3jiel8xif5lpm.js","async":true}]],["$","html",null,{"lang":"en","children":["$","body",null,{"children":[["$","$L3",null,{"parallelRouterKey":"children","template":["$","$L4",null,{}],"notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]]}],["$","$L5",null,{}],["$","$L6",null,{}]]}]}]]}],"p":"$@7","v":null,"s":"$8"},"c":"$Q9"},"h":{"r":["$","$1","h",{"children":[null,["$","$L14",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","$L16",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$17",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"A Islam Medical Hall"}],["$","meta","1",{"name":"description","content":"Clinic management system"}]]}]}],null]}],null]}],"p":"$@18","v":null,"s":"$8"}},"a":"$@19","u":"$@1a","b":"Cq6reOdvmmVxITcEl95tc"}
+1b:I[97367,["$2"],"OutletBoundary"]
+10:["$","script","script-0",{"src":"/_next/static/chunks/1wsrh4atp3cd0.js","async":true}]
+11:["$","$L1b",null,{"children":["$","$17",null,{"name":"Next.MetadataOutlet","children":"$@1c"}]}]
+8:300
+1c:null
+1a:true
+8:C
+19:0
+a:"$undefined"
+7:"$undefined"
+18:"$undefined"
+12:"$undefined"

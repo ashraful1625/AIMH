@@ -1,0 +1,423 @@
+1:"$Sreact.fragment"
+2:"/_next/static/chunks/3jiel8xif5lpm.js"
+3:I[39756,["$2"],"default"]
+4:I[37457,["$2"],"default"]
+5:I[43880,["$2"],"Analytics"]
+6:I[57215,["$2"],"SpeedInsights"]
+b:I[97367,["$2"],"OutletBoundary"]
+c:"$Sreact.suspense"
+e:"ViewportBoundary"
+f:I[97367,["$2"],"$e"]
+11:"MetadataBoundary"
+12:I[97367,["$2"],"$11"]
+14:I[68027,["$2"],"default",1]
+8:X
+9:[["children",{"s":"__PAGE__","h":512,"d":{"r":["$","$1","c",{"children":["$La",[["$","script","script-0",{"src":"/_next/static/chunks/1wsrh4atp3cd0.js","async":true,"nonce":"$undefined"}]],["$","$Lb",null,{"children":["$","$c",null,{"name":"Next.MetadataOutlet","children":"$@d"}]}]]}],"p":false,"v":null}}]]
+7:[["children",{"s":{"n":"slug","t":"d","k":"billing.html","s":["css","js"]},"h":512,"d":{"r":["$","$1","c",{"children":[null,["$","$L3",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L4",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":"$undefined","forbidden":"$undefined","unauthorized":"$undefined"}]]}],"p":false,"v":"$8"},"c":"$Q9"}]]
+0:{"P":null,"c":["","billing.html"],"q":"","i":false,"t":{"t":{"s":"","h":528,"d":{"r":["$","$1","c",{"children":[[["$","script","script-0",{"src":"/_next/static/chunks/3jiel8xif5lpm.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en","children":["$","body",null,{"children":[["$","$L3",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L4",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\"Segoe UI\",Roboto,Helvetica,Arial,sans-serif,\"Apple Color Emoji\",\"Segoe UI Emoji\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]],"forbidden":"$undefined","unauthorized":"$undefined"}],["$","$L5",null,{}],["$","$L6",null,{}]]}]}]]}],"p":false,"v":null},"c":"$Q7"},"h":{"r":["$","$1","h",{"children":[null,["$","$Lf",null,{"children":"$L10"}],["$","$L12",null,{"children":[["$","div",null,{"hidden":true,"children":["$","$c",null,{"name":"Next.Metadata","children":"$L13"}]}],null]}],null]}],"p":false,"v":null}},"m":"$undefined","G":["$14",[]],"S":true,"r":"$undefined","s":"$undefined","a":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"Cq6reOdvmmVxITcEl95tc"}
+8:C
+10:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]
+d:null
+13:[["$","title","0",{"children":"A Islam Medical Hall"}],["$","meta","1",{"name":"description","content":"Clinic management system"}]]
+15:"/_next/static/chunks/1wsrh4atp3cd0.js"
+16:I[15365,["$2","$15"],"default"]
+17:T577e,<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Billing · A Islam Medical Hall</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <div class="hdr" id="hdr"></div>
+  <div class="cnt">
+    <h1 class="ptitle">💰 Billing <span class="bn" style="font-size:12px;font-weight:400;color:var(--t3)">বিলিং</span></h1>
+
+    <div class="card">
+      <div class="ct">🔍 Load Prescription <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">প্রেসক্রিপশন লোড</span></div>
+      <div class="uid">
+        <input type="text" id="billuid" placeholder="Prescription number or scan its QR code" maxlength="40" oninput="this.value=this.value.toUpperCase()">
+        <button class="btn bp" type="button" id="loadbtn" onclick="loadRx()">🔍 Load</button>
+        <button class="btn bs" type="button" id="scanrxbtn" onclick="startRxScan()">📷 Scan QR</button>
+      </div>
+      <div id="rxscanner" class="rxscanner" hidden>
+        <video id="rxscanvideo" playsinline muted></video>
+        <div class="rxscanner-actions">
+          <span id="rxscanstatus">Point the camera at a prescription QR code.</span>
+          <button class="btn bd bsm" type="button" onclick="stopRxScan()">Stop camera</button>
+        </div>
+      </div>
+      <div id="billrx"></div>
+    </div>
+
+    <div class="card" id="billsvcard" style="display:none">
+      <div class="ct">🏥 Services <span class="bn" style="font-size:11px;font-weight:400;color:var(--t3)">সেবাসমূহ</span></div>
+      <div class="svcg">
+        <div class="svci"><div class="svcc" id="sbp" onclick="togSvc(\'bp\')"></div><div class="svci-info"><div class="svci-lbl">🩺 BP Check</div><div class="svci-bn">রক্তচাপ</div></div><div class="svci-p"><input type="number" id="sbpp" value="20" min="0" oninput="calcTotal()"></div></div>
+        <div class="svci"><div class="svcc" id="sdm" onclick="togSvc(\'dm\')"></div><div class="svci-info"><div class="svci-lbl">🩸 Diabetes</div><div class="svci-bn">ডায়াবেটিস</div></div><div class="svci-p"><input type="number" id="sdmp" value="40" min="0" oninput="calcTotal()"></div></div>
+        <div class="svci"><div class="svcc" id="sinj" onclick="togSvc(\'inj\')"></div><div class="svci-info"><div class="svci-lbl">💉 Injection</div><div class="svci-bn">ইনজেকশন</div></div><div class="svci-p"><input type="number" id="sinjp" value="20" min="0" oninput="calcTotal()"></div></div>
+        <div class="svci"><div class="svcc" id="ssal" onclick="togSvc(\'sal\')"></div><div class="svci-info"><div class="svci-lbl">🧪 Saline</div><div class="svci-bn">স্যালাইন</div></div><div class="svci-p"><input type="number" id="ssalp" value="30" min="0" oninput="calcTotal()"></div></div>
+        <div class="svci"><div class="svcc" id="sdr" onclick="togSvc(\'dr\')"></div><div class="svci-info"><div class="svci-lbl">🩹 Dressing</div><div class="svci-bn">ড্রেসিং</div></div><div class="svci-p"><input type="number" id="sdrp" value="0" min="0" oninput="calcTotal()"></div></div>
+        <div class="svci"><div class="svcc" id="soth" onclick="togSvc(\'oth\')"></div><div class="svci-info"><div class="svci-lbl">📦 Others</div><div class="svci-bn">অন্যান্য</div></div><div class="svci-p"><input type="number" id="sothp" value="0" min="0" oninput="calcTotal()"></div></div>
+      </div>
+      <div class="row r2">
+        <div class="fg"><label>Consultation Fee ৳</label><input type="number" id="billconsult" value="0" oninput="calcTotal()"></div>
+        <div class="fg"><label>Service Charge ৳</label><input type="number" id="billservice" value="10" readonly></div>
+      </div>
+    </div>
+
+    <div id="billmedsec"></div>
+
+    <div id="billtotalsec" style="display:none">
+      <div class="card">
+        <div class="row r2" style="margin-bottom:10px">
+          <div class="fg"><label>Discount ৳ <span class="lbn">ছাড় (Fixed)</span></label><input type="number" id="billdisc" value="0" oninput="calcTotal()"></div>
+          <div class="fg"><label>Discount % <span class="lbn">ছাড় (%)</span></label><input type="number" id="billdiscp" value="0" min="0" max="8" oninput="calcTotal()"></div>
+        </div>
+        <div class="gtbar"><div><div class="gtl">Total Amount</div><div class="gtbn">মোট পরিশোধযোগ্য</div></div><div class="gta">৳ <span id="gtamt">0</span></div></div>
+        <div class="brow">
+          <button class="btn bp bfull" id="savebillbtn" onclick="saveBill()">💾 Save & Print / বিল সংরক্ষণ ও প্রিন্ট</button>
+          <button class="btn bs" onclick="previewBill()">👁️ Preview / প্রিভিউ</button>
+          <button class="btn bd" onclick="clearBill()">🗑️ Clear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="pa"></div>
+
+<script type="module">
+import { loadAll, requireRole, renderHeader, printHTML, sync, fadd, fupd, fget, INV } from './js/core.js';
+
+const session = await requireRole(['staff','admin']);
+if(session){
+  await loadAll();
+  renderHeader();
+  document.getElementById('app').classList.add('on');
+  // Auto-load if arriving from the patient page with a prescription number.
+  const pre=new URLSearchParams(location.search).get('rx');
+  if(pre){ document.getElementById('billuid').value=pre; loadRx(); }
+}
+
+let curRx=null, svcOn={bp:false,dm:false,inj:false,sal:false,dr:false,oth:false};
+let qrCameraStream=null, qrScanFrame=0, qrScanGeneration=0;
+
+window.togSvc=function(s){
+  svcOn[s]=!svcOn[s];
+  const el=document.getElementById('s'+s);
+  if(el){ el.classList.toggle('on',svcOn[s]); el.textContent=svcOn[s]?'✓':''; }
+  calcTotal();
+};
+
+window.loadRx=async function(qrPayload=null){
+  const uid=(qrPayload?.rxId||document.getElementById('billuid').value).trim().toUpperCase();
+  if(!uid){ alert('Enter a prescription number or scan its QR code.'); return; }
+  document.getElementById('billuid').value=uid;
+  const btn=document.getElementById('loadbtn');
+  btn.innerHTML='<span class="sp"></span>'; btn.disabled=true;
+  try{
+    const snap=await fget('prescriptions',uid);
+    if(!snap.exists()){
+      document.getElementById('billrx').innerHTML='<div class="al ale">❌ No prescription found: '+uid+'</div>';
+      return;
+    }
+    curRx={id:snap.id,...snap.data()};
+    if(qrPayload && !qrMedsMatch(qrPayload.meds,curRx.meds||[])){
+      console.warn('Scanned medicine details differ from the saved prescription; billing uses the saved Firestore prescription.');
+    }
+    document.getElementById('billrx').innerHTML='<div class="rxsum">'+
+      '<div style="font-weight:700;font-size:13px;color:var(--g1);margin-bottom:5px;display:flex;justify-content:space-between">'+
+        '<span>📋 '+curRx.patient+'</span><span style="font-size:11px;color:var(--t3)">'+(curRx.dateStr||curRx.date)+'</span></div>'+
+      '<div style="font-size:12px;color:var(--t2)">Doctor: '+(curRx.doctorName||'—')+' · Age: '+(curRx.age||'—')+'</div>'+
+      '<div style="font-size:12px;font-weight:700;color:var(--g1);margin-top:4px;letter-spacing:0.5px">ID: '+(curRx.rxId||uid)+'</div></div>';
+    document.getElementById('billsvcard').style.display='block';
+    document.getElementById('billconsult').value=curRx.fee||0;
+    renderBillMeds(curRx);
+    document.getElementById('billtotalsec').style.display='block';
+    calcTotal();
+  }catch(e){ console.error(e); alert('❌ Error: '+e.message); }
+  finally{ btn.innerHTML='🔍 Load'; btn.disabled=false; }
+};
+
+function parsePrescriptionQr(text){
+  let payload;
+  try{ payload=JSON.parse(text); }
+  catch{ throw new Error('This QR code is not a prescription QR code.'); }
+  if(!payload || payload.v!==1 || typeof payload.rxId!=='string' ||
+    !/^(?:\d{16,40}|P\d{1,40})$/.test(payload.rxId) ||
+    !Array.isArray(payload.meds) || payload.meds.length>20 ||
+    !payload.meds.every(m=>Array.isArray(m) && m.length===4 &&
+      typeof m[0]==='string' && Number.isInteger(m[1]) && m[1]>=0 && m[1]<=15 &&
+      (m[2]===0||m[2]===1) && Number.isInteger(m[3]) && m[3]>=0)){
+    throw new Error('The QR code does not contain valid prescription details.');
+  }
+  return payload;
+}
+
+function qrMedsMatch(qrMeds,savedMeds){
+  return qrMeds.length===savedMeds.length && qrMeds.every((med,index)=>{
+    const saved=savedMeds[index];
+    const schedule=(saved.morning?1:0)|(saved.noon?2:0)|(saved.evening?4:0)|(saved.night?8:0);
+    return med[0]===saved.name && med[1]===schedule &&
+      med[2]===(saved.food==='before'?1:0) && med[3]===saved.days;
+  });
+}
+
+window.startRxScan=async function(){
+  if(!navigator.mediaDevices?.getUserMedia){
+    alert('Camera scanning is unavailable in this browser. Enter the prescription number manually.');
+    return;
+  }
+  if(!('BarcodeDetector' in window)){
+    alert('QR camera scanning is not supported by this browser. Open billing in Chrome or Edge, or enter the prescription number manually.');
+    return;
+  }
+  try{
+    const detector=new BarcodeDetector({formats:['qr_code']});
+    qrCameraStream=await navigator.mediaDevices.getUserMedia({
+      audio:false,video:{facingMode:{ideal:'environment'}}
+    });
+    const video=document.getElementById('rxscanvideo');
+    video.srcObject=qrCameraStream;
+    await video.play();
+    document.getElementById('rxscanner').hidden=false;
+    const generation=++qrScanGeneration;
+    const scan=async()=>{
+      if(generation!==qrScanGeneration) return;
+      try{
+        const codes=await detector.detect(video);
+        if(codes.length){
+          const payload=parsePrescriptionQr(codes[0].rawValue);
+          stopRxScan();
+          await loadRx(payload);
+          return;
+        }
+      }catch(error){
+        stopRxScan();
+        console.error('Prescription QR scan failed:',error);
+        alert('❌ QR scan failed: '+error.message);
+        return;
+      }
+      qrScanFrame=requestAnimationFrame(scan);
+    };
+    qrScanFrame=requestAnimationFrame(scan);
+  }catch(error){
+    stopRxScan();
+    console.error('Could not start the prescription QR scanner:',error);
+    alert('❌ Could not start the camera: '+error.message);
+  }
+};
+
+window.stopRxScan=function(){
+  qrScanGeneration++;
+  if(qrScanFrame) cancelAnimationFrame(qrScanFrame);
+  qrScanFrame=0;
+  if(qrCameraStream) qrCameraStream.getTracks().forEach(track=>track.stop());
+  qrCameraStream=null;
+  const video=document.getElementById('rxscanvideo');
+  if(video) video.srcObject=null;
+  const scanner=document.getElementById('rxscanner');
+  if(scanner) scanner.hidden=true;
+};
+
+const COURSES=[{l:'3D',d:3},{l:'5D',d:5},{l:'7D',d:7},{l:'10D',d:10},{l:'15D',d:15},{l:'30D',d:30},{l:'Full',d:null}];
+
+function renderBillMeds(rx){
+  const sec=document.getElementById('billmedsec');
+  if(!rx.meds||!rx.meds.length){ sec.innerHTML=''; return; }
+  const isTab=m=>['Tablet','Capsule'].includes(m.type);
+  sec.innerHTML='<div class="card"><div class="ct">💊 Medicine Billing</div>'+
+  rx.meds.map((m,i)=>{
+    const doses=[m.morning,m.noon,m.evening,m.night].filter(Boolean).length;
+    const ds=[m.morning?'M':'',m.noon?'N':'',m.evening?'E':'',m.night?'Nt':''].filter(Boolean).join('+');
+    const cnt=isTab(m);
+    const pd=m.days||0, up=m.unitPrice||0;
+    const iQ=cnt?doses*pd:1, iT=cnt?iQ*up:up;
+    const cH=cnt?
+      '<div style="font-size:11px;font-weight:600;color:var(--t2);margin-bottom:4px">Course:</div>'+
+      '<div class="csel" id="cs'+i+'">'+COURSES.map((c,ci)=>'<button class="cb'+(ci===COURSES.length-1?' on':'')+'" onclick="pickCourse('+i+','+(c.d===null?pd:Math.min(c.d,pd))+','+pd+','+doses+','+up+',this)">'+c.l+'</button>').join('')+'</div>':
+      '<div style="font-size:11px;color:var(--t3);margin-bottom:6px">'+m.type+' — set price below</div>';
+    return '<div class="bmr">'+
+      '<div class="bmn">💊 '+m.name+' <span style="font-size:9px;background:var(--gl);color:var(--g1);padding:2px 6px;border-radius:10px;margin-left:4px">'+m.type+'</span></div>'+
+      '<div class="bmd">Dose:'+(ds||'—')+' · '+(m.food==='before'?'Before':'After')+' food · Rx:'+pd+'d · Unit:৳'+up+'</div>'+
+      cH+
+      '<div class="bmc">'+
+        '<span style="color:var(--t2);font-size:12px">Qty:<span id="qty'+i+'">'+iQ+'</span>×৳<span id="up'+i+'">'+up+'</span></span>'+
+        '<span class="bmt">৳<span id="mt'+i+'">'+iT.toFixed(0)+'</span></span>'+
+      '</div>'+
+      (!cnt?'<div style="display:flex;gap:8px;align-items:center;margin-top:6px"><label style="font-size:11px;white-space:nowrap">Price ৳</label><input type="number" value="'+up+'" min="0" style="width:80px;font-size:12px;padding:5px 7px" oninput="updPrice('+i+',this.value)"></div>':'')+
+    '</div>';
+  }).join('')+'</div>';
+}
+
+window.pickCourse=function(idx,selD,prescD,doses,unitP,btn){
+  const actual=Math.min(selD,prescD);
+  document.querySelectorAll('#cs'+idx+' .cb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const qty=doses*actual;
+  document.getElementById('qty'+idx).textContent=qty;
+  document.getElementById('mt'+idx).textContent=(qty*unitP).toFixed(0);
+  calcTotal();
+};
+
+window.updPrice=function(idx,p){
+  const v=parseFloat(p)||0;
+  document.getElementById('up'+idx).textContent=v;
+  document.getElementById('mt'+idx).textContent=v.toFixed(0);
+  calcTotal();
+};
+
+function calcMedTotal(){
+  let t=0;
+  if(curRx) (curRx.meds||[]).forEach((_,i)=>{ const e=document.getElementById('mt'+i); if(e) t+=parseFloat(e.textContent)||0; });
+  return t;
+}
+function calcSvcTotal(){
+  let t=parseInt(document.getElementById('billconsult')?.value)||0;
+  t+=parseInt(document.getElementById('billservice')?.value)||0;
+  ['bp','dm','inj','sal','dr','oth'].forEach(s=>{ if(svcOn[s]){ const e=document.getElementById('s'+s+'p'); if(e) t+=parseInt(e.value)||0; } });
+  return t;
+}
+
+window.calcTotal=function(){
+  if(!curRx) return;
+  const medTotal=calcMedTotal();
+  const svcTotal=calcSvcTotal();
+  const discFixed=parseInt(document.getElementById('billdisc')?.value)||0;
+  const discPerc=Math.min(8,parseInt(document.getElementById('billdiscp')?.value)||0);
+  const discount=discFixed+(medTotal*(discPerc/100));
+  const total=medTotal+svcTotal-discount;
+  const el=document.getElementById('gtamt');
+  if(el) el.textContent=Math.max(0,total).toFixed(0);
+};
+
+function getBillData(){
+  if(!curRx) return null;
+  const meds=[];
+  for(let i=0;i<(curRx.meds||[]).length;i++){
+    const m=curRx.meds[i];
+    const qty=parseInt(document.getElementById('qty'+i)?.textContent)||0;
+    const price=parseFloat(document.getElementById('up'+i)?.textContent)||0;
+    if(qty>0) meds.push({name:m.name,qty,price,total:qty*price});
+  }
+  const svcNames={bp:'BP Check',dm:'Diabetes Check',inj:'Injection Push',sal:'Saline Push',dr:'Dressing',oth:'Others'};
+  const svcs=[];
+  Object.keys(svcOn).forEach(s=>{
+    if(svcOn[s]) svcs.push({name:svcNames[s],total:parseInt(document.getElementById('s'+s+'p')?.value)||0});
+  });
+  const medTotal=calcMedTotal();
+  const svcTotal=calcSvcTotal();
+  const discFixed=parseFloat(document.getElementById('billdisc').value)||0;
+  const discPerc=parseFloat(document.getElementById('billdiscp').value)||0;
+  const grandTotal=parseFloat(document.getElementById('gtamt').textContent)||0;
+  return {
+    rxId:curRx.rxId, patient:curRx.patient, age:curRx.age, gender:curRx.gender,
+    date:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),
+    meds, svcs, medTotal, svcTotal, sc:10, discFixed, discPerc, grandTotal
+  };
+}
+
+function buildPrintBill(bill){
+  const medRows=bill.meds.map((m,i)=>
+    '<tr><td style="text-align:center;font-size:10px;color:#999">'+(i+1)+'</td>'+
+    '<td style="padding:6px 8px">'+m.name+'</td>'+
+    '<td style="text-align:center">'+m.qty+'</td>'+
+    '<td style="text-align:right">'+m.price+'</td>'+
+    '<td style="text-align:right;font-weight:600">'+m.total+'</td></tr>'
+  ).join('');
+  const svcRows=bill.svcs.map(s=>
+    '<tr><td colspan="4" style="padding:4px 8px;font-size:12px">'+s.name+'</td>'+
+    '<td style="text-align:right;padding:4px 8px;font-size:12px">৳'+s.total+'</td></tr>'
+  ).join('');
+  const discAmt=(bill.medTotal*bill.discPerc/100+bill.discFixed).toFixed(0);
+  return '<div class="rxp" style="max-width:500px;margin:auto;border:1px solid #eee;padding:30px">'+
+    '<div style="text-align:center;margin-bottom:20px">'+
+      '<div style="font-family:\'Noto Serif Bengali\',serif;font-size:22px;font-weight:700;color:#1a5c3a">এ ইসলাম মেডিকেল হল</div>'+
+      '<div style="font-size:14px;font-weight:700;color:#22774d;letter-spacing:1px;margin-top:4px">A ISLAM MEDICAL HALL</div>'+
+      '<div style="font-size:11px;color:#666;margin-top:4px">Kasba Puratan Bazar, Kasba, Brahmanbaria</div>'+
+      '<div style="font-size:11px;color:#666">📞 01884794060, 01830079952</div>'+
+      '<div style="margin:15px auto;width:80px;height:2px;background:#1a5c3a"></div>'+
+      '<div style="font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#1a5c3a">INVOICE</div>'+
+    '</div>'+
+    '<div style="display:flex;justify-content:space-between;margin-bottom:20px;font-size:12px;border-bottom:1px solid #f0f0f0;padding-bottom:10px">'+
+      '<div><div><b>Patient:</b> '+bill.patient+'</div><div><b>Age/Sex:</b> '+(bill.age||'—')+' / '+(bill.gender||'—')+'</div></div>'+
+      '<div style="text-align:right"><div><b>Date:</b> '+bill.date+'</div><div><b>Rx ID:</b> '+bill.rxId+'</div></div>'+
+    '</div>'+
+    '<table style="width:100%;border-collapse:collapse;margin-bottom:15px">'+
+      '<thead><tr style="background:#f2faf6;font-size:11px;color:#1a5c3a">'+
+        '<th style="padding:8px;width:24px">#</th><th style="padding:8px;text-align:left">Medicine</th>'+
+        '<th style="padding:8px">Qty</th><th style="padding:8px;text-align:right">Price</th><th style="padding:8px;text-align:right">Total</th>'+
+      '</tr></thead><tbody style="font-size:12px">'+medRows+'</tbody>'+
+    '</table>'+
+    '<table style="width:100%;border-collapse:collapse;margin-top:10px"><tbody style="font-size:12px">'+
+      svcRows+
+      '<tr><td colspan="4" style="padding:4px 8px;border-top:1px solid #f0f0f0">Service Charge</td>'+
+      '<td style="text-align:right;padding:4px 8px;border-top:1px solid #f0f0f0">৳'+bill.sc+'</td></tr>'+
+      (bill.discFixed||bill.discPerc?
+        '<tr><td colspan="4" style="padding:4px 8px;color:#d32f2f">Discount '+(bill.discPerc?'('+bill.discPerc+'%)':'')+'</td>'+
+        '<td style="text-align:right;padding:4px 8px;color:#d32f2f">-৳'+discAmt+'</td></tr>':'')+
+      '<tr style="font-size:16px;font-weight:700;color:#1a5c3a">'+
+        '<td colspan="4" style="padding:10px 8px;border-top:2px solid #1a5c3a">GRAND TOTAL</td>'+
+        '<td style="text-align:right;padding:10px 8px;border-top:2px solid #1a5c3a">৳'+bill.grandTotal+'</td></tr>'+
+    '</tbody></table>'+
+    '<div style="margin-top:40px;display:flex;justify-content:space-between;align-items:flex-end">'+
+      '<div style="font-size:10px;color:#999">Printed on '+new Date().toLocaleString()+'</div>'+
+      '<div style="text-align:center"><div style="width:120px;border-top:1px solid #ccc;margin-bottom:5px"></div>'+
+      '<div style="font-size:11px;font-weight:700;color:#1a5c3a">Authorized Signature</div></div>'+
+    '</div>'+
+    '<div style="margin-top:30px;text-align:center;font-size:11px;color:#7a9b8a;border-top:1px dashed #eee;padding-top:10px">Thank you for choosing A Islam Medical Hall</div>'+
+  '</div>';
+}
+
+window.previewBill=function(){
+  const bill=getBillData();
+  if(!bill){ alert('Load a prescription first!'); return; }
+  printHTML(buildPrintBill(bill), true);
+};
+
+window.saveBill=async function(){
+  if(!curRx){ alert('Load a prescription first!'); return; }
+  const bill=getBillData();
+  const btn=document.getElementById('savebillbtn');
+  btn.innerHTML='<span class="sp"></span>Saving...'; btn.disabled=true;
+  try{
+    for(let i=0;i<(curRx.meds||[]).length;i++){
+      const m=curRx.meds[i];
+      const qty=parseInt(document.getElementById('qty'+i)?.textContent)||0;
+      const invMed=INV.find(x=>x.name.toLowerCase()===m.name.toLowerCase());
+      if(invMed && qty>0) await fupd('inventory',invMed.id,{stock:Math.max(0,invMed.stock-qty)});
+    }
+    await fadd('bills',{
+      rxId:bill.rxId, patient:bill.patient, doctorName:curRx.doctorName||'',
+      date:new Date().toISOString().split('T')[0],
+      dateStr:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),
+      total:bill.grandTotal, services:bill.svcs.map(s=>s.name),
+      savedAt:new Date().toISOString()
+    });
+    sync('✅ Bill Saved!');
+    printHTML(buildPrintBill(bill), false);
+    clearBill();
+  }catch(e){ console.error(e); alert('❌ Failed: '+e.message); }
+  finally{ btn.innerHTML='💾 Save & Print / বিল সংরক্ষণ ও প্রিন্ট'; btn.disabled=false; }
+};
+
+window.clearBill=function(){
+  stopRxScan();
+  curRx=null; svcOn={bp:false,dm:false,inj:false,sal:false,dr:false,oth:false};
+  ['sbp','sdm','sinj','ssal','sdr','soth'].forEach(id=>{ const e=document.getElementById(id); if(e){ e.classList.remove('on'); e.textContent=''; } });
+  document.getElementById('billuid').value='';
+  document.getElementById('billrx').innerHTML='';
+  document.getElementById('billsvcard').style.display='none';
+  document.getElementById('billmedsec').innerHTML='';
+  document.getElementById('billtotalsec').style.display='none';
+  document.getElementById('gtamt').textContent='0';
+  document.getElementById('billdisc').value='0';
+  document.getElementById('billdiscp').value='0';
+};
+</script>
+</body>
+</html>
+a:["$","$L16",null,{"html":"$17"}]
