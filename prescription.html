@@ -286,6 +286,50 @@ function getRxData(){
   };
 }
 
+function prescriptionValidationError(data){
+  const textFields={
+    rxId:[40,true],dateStr:[40,false],patient:[120,true],phone:[30,false],age:[30,false],
+    gender:[30,false],bp:[40,false],weight:[40,false],fever:[40,false],temp:[40,false],
+    complaint:[2000,false],advice:[2000,false],nextVisit:[40,false],doctorId:[128,false],
+    doctorName:[100,false],doctorDeg:[160,false],doctorSpec:[160,false],doctorPhone:[30,false],
+    savedAt:[40,false]
+  };
+  const allowedFields=[
+    'rxId','date','dateStr','patient','phone','age','gender','bp','weight','fever','temp',
+    'complaint','advice','nextVisit','fee','doctorId','doctorName','doctorDeg','doctorSpec',
+    'doctorPhone','meds','savedAt'
+  ];
+  if(Object.keys(data).some(key=>!allowedFields.includes(key))
+    || allowedFields.some(key=>!Object.hasOwn(data,key)))
+    return 'Prescription fields do not match the Firestore schema.';
+  for(const [field,[maxLength,nonEmpty]] of Object.entries(textFields)){
+    if(typeof data[field]!=='string' || data[field].length>maxLength || (nonEmpty&&!data[field].length))
+      return 'Invalid prescription field: '+field+'.';
+  }
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(data.date))
+    return 'Invalid prescription field: date.';
+  if(typeof data.fee!=='number' || !Number.isFinite(data.fee) || data.fee<0 || data.fee>10000000)
+    return 'Invalid prescription field: fee.';
+  if(!Array.isArray(data.meds) || data.meds.length>20)
+    return 'Invalid prescription field: meds.';
+  const medFields=['name','morning','noon','evening','night','food','days','unitPrice','type'];
+  for(let i=0;i<data.meds.length;i++){
+    const med=data.meds[i];
+    if(!med || typeof med!=='object'
+      || Object.keys(med).some(key=>!medFields.includes(key))
+      || medFields.some(key=>!Object.hasOwn(med,key))
+      || typeof med.name!=='string' || !med.name.length || med.name.length>160
+      || !['morning','noon','evening','night'].every(key=>typeof med[key]==='boolean')
+      || !['before','after'].includes(med.food)
+      || !Number.isInteger(med.days) || med.days<0 || med.days>10000
+      || typeof med.unitPrice!=='number' || !Number.isFinite(med.unitPrice)
+      || med.unitPrice<0 || med.unitPrice>10000000
+      || typeof med.type!=='string' || med.type.length>50)
+      return 'Invalid prescription medicine at row '+(i+1)+'. Check the name, schedule, duration, and price.';
+  }
+  return null;
+}
+
 async function persistRx(){
   const rx=getRxData();
   if(!rx.patient){ alert('⚠️ Enter patient name!'); return null; }
@@ -293,8 +337,11 @@ async function persistRx(){
   let created=false, qrDataUrl='';
   while(!created){
     rx.rxId=curRxId;
+    const prescription={...rx,savedAt:new Date().toISOString()};
+    const validationError=prescriptionValidationError(prescription);
+    if(validationError) throw new Error(validationError);
     qrDataUrl=await makeQrDataUrl(rx);
-    created=await fcreate('prescriptions',rx.rxId,{...rx,savedAt:new Date().toISOString()});
+    created=await fcreate('prescriptions',rx.rxId,prescription);
     if(!created) genRxId();
   }
   let patientError=null;
