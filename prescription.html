@@ -248,6 +248,7 @@ function getRxData(){
     const dots=tr.querySelectorAll('.dt');
     const inv2=INV.find(m=>typeof m.name==='string' && m.name.toLowerCase()===name.toLowerCase());
     const food=tr.querySelector('select')?.value==='before'?'before':'after';
+    const days=asInt(tr.querySelector('.mdays')?.value,0,10000);
     meds.push({
       name,
       morning:!!dots[0]?.classList.contains('on'),
@@ -255,9 +256,9 @@ function getRxData(){
       evening:!!dots[2]?.classList.contains('on'),
       night:!!dots[3]?.classList.contains('on'),
       food,
-      days:asInt(tr.querySelector('.mdays')?.value,0,10000),
+      days,
       unitPrice:asNum(inv2?.sell,0,10000000),
-      type:asText(inv2?.type,50)
+      type:asText(inv2?.type ?? '',50)
     });
   });
   return {
