@@ -41,8 +41,12 @@ service cloud.firestore {
       return value is string && value.size() <= maxLength;
     }
 
+    function optionalTextValue(value, maxLength) {
+      return value == null || value == '' || (value is string && value.size() <= maxLength);
+    }
+
     function optionalText(data, key, maxLength) {
-      return !(key in data) || validText(data, key, maxLength);
+      return !(key in data) || optionalTextValue(data[key], maxLength);
     }
 
     function validNumber(data, key, minValue, maxValue) {
@@ -175,19 +179,19 @@ service cloud.firestore {
         && validText(data, 'phone', 30)
         && validText(data, 'age', 30)
         && validText(data, 'gender', 30)
-        && validText(data, 'bp', 40)
-        && validText(data, 'weight', 40)
-        && validText(data, 'fever', 40)
-        && validText(data, 'temp', 40)
+        && optionalTextValue(data.bp, 40)
+        && optionalTextValue(data.weight, 40)
+        && optionalTextValue(data.fever, 40)
+        && optionalTextValue(data.temp, 40)
         && validText(data, 'complaint', 2000)
         && validText(data, 'advice', 2000)
-        && validText(data, 'nextVisit', 40)
+        && optionalTextValue(data.nextVisit, 40)
         && validNumber(data, 'fee', 0, 10000000)
         && validText(data, 'doctorId', 128)
         && validText(data, 'doctorName', 100)
-        && validText(data, 'doctorDeg', 160)
-        && validText(data, 'doctorSpec', 160)
-        && validText(data, 'doctorPhone', 30)
+        && optionalTextValue(data.doctorDeg, 160)
+        && optionalTextValue(data.doctorSpec, 160)
+        && optionalTextValue(data.doctorPhone, 30)
         && validMeds(data.meds)
         && validTimestampText(data, 'savedAt');
     }
