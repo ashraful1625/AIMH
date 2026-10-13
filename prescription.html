@@ -341,7 +341,7 @@ function prescriptionValidationError(data){
 async function persistRx(){
   const rx=getRxData();
   if(!rx.patient){ alert('⚠️ Enter patient name!'); return null; }
-  if(!rx.doctorId){ alert('⚠️ Please select a doctor!'); return null; }
+  if(!rx.doctorId && session.role==='doctor'){ alert('⚠️ Please select a doctor!'); return null; }
   let created=false, qrDataUrl='';
   while(!created){
     rx.rxId=curRxId;
