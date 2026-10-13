@@ -328,7 +328,7 @@ export function closeModal(id){ document.getElementById(id)?.classList.remove('o
 document.addEventListener('click',e=>{ if(e.target.classList.contains('mbg')) e.target.classList.remove('on'); });
 
 // ── Print helper ──────────────────────────────────────────────
-export function printHTML(html, preview){
+export function printHTML(html, preview, beforePrint){
   const pa=document.getElementById('pa');
   pa.style.cssText='';
   pa.innerHTML=html; pa.style.display='block';
@@ -338,7 +338,19 @@ export function printHTML(html, preview){
     const ctrl=document.createElement('div');
     ctrl.id='pc';
     ctrl.style.cssText='display:flex;gap:8px;margin-bottom:12px;position:sticky;top:0;background:#fff;padding:8px 0;z-index:100;border-bottom:1px solid #eee';
-    ctrl.innerHTML='<button class="btn bd bsm" onclick="AIMH.closePrint()">✕ Close</button><button class="btn bp bsm" onclick="window.print()">🖨️ Print</button>';
+    ctrl.innerHTML='<button class="btn bd bsm" type="button" data-close-print>✕ Close</button><button class="btn bp bsm" type="button" data-print-page>🖨️ Print</button>';
+    ctrl.querySelector('[data-close-print]').addEventListener('click',()=>window.AIMH.closePrint());
+    ctrl.querySelector('[data-print-page]').addEventListener('click',async event=>{
+      const button=event.currentTarget;
+      button.disabled=true;
+      try{
+        if(beforePrint && await beforePrint()===false) return;
+        window.print();
+      }catch(error){
+        console.error('Could not prepare print preview:',error);
+        alert('❌ Could not save or print: '+(error.message||error));
+      }finally{ button.disabled=false; }
+    });
     pa.prepend(ctrl);
   }
 }

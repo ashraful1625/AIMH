@@ -285,42 +285,48 @@ function getRxData(){
   };
 }
 
-window.saveRx=async function(){
+async function persistRx(){
   const rx=getRxData();
-  if(!rx.patient){ alert('⚠️ Enter patient name!'); return; }
-  if(!rx.doctorId){ alert('⚠️ Please select a doctor!'); return; }
+  if(!rx.patient){ alert('⚠️ Enter patient name!'); return null; }
+  if(!rx.doctorId){ alert('⚠️ Please select a doctor!'); return null; }
+  let created=false, qrDataUrl='';
+  while(!created){
+    rx.rxId=curRxId;
+    qrDataUrl=await makeQrDataUrl(rx);
+    created=await fcreate('prescriptions',rx.rxId,{...rx,savedAt:new Date().toISOString()});
+    if(!created) genRxId();
+  }
+  let patientError=null;
+  try{
+    const ex=PTS.find(p=>p.phone===rx.phone && rx.phone!=='+8801');
+    if(!ex){
+      await fadd('patients',{name:rx.patient,phone:rx.phone,age:rx.age,gender:rx.gender,visits:1,lastVisit:rx.date,lastRxId:rx.rxId,ca:new Date().toISOString()});
+    }else{
+      await fupd('patients',ex.id,{visits:(ex.visits||0)+1,lastVisit:rx.date,lastRxId:rx.rxId,name:rx.patient,age:rx.age});
+    }
+  }catch(error){
+    patientError=error;
+    console.error('Prescription saved, but patient history update failed:',error);
+  }
+  sync('✅ Saved!');
+  return {rx,qrDataUrl,patientError};
+}
+
+window.saveRx=async function(){
   const btn=document.getElementById('saverxbtn');
   btn.innerHTML='<span class="sp"></span>Saving...'; btn.disabled=true;
   try{
-    let created=false, qrDataUrl='';
-    while(!created){
-      rx.rxId=curRxId;
-      qrDataUrl=await makeQrDataUrl(rx);
-      created=await fcreate('prescriptions',rx.rxId,{...rx,savedAt:new Date().toISOString()});
-      if(!created) genRxId();
-    }
-    let patientError=null;
-    try{
-      const ex=PTS.find(p=>p.phone===rx.phone && rx.phone!=='+8801');
-      if(!ex){
-        await fadd('patients',{name:rx.patient,phone:rx.phone,age:rx.age,gender:rx.gender,visits:1,lastVisit:rx.date,lastRxId:rx.rxId,ca:new Date().toISOString()});
-      }else{
-        await fupd('patients',ex.id,{visits:(ex.visits||0)+1,lastVisit:rx.date,lastRxId:rx.rxId,name:rx.patient,age:rx.age});
-      }
-    }catch(error){
-      patientError=error;
-      console.error('Prescription saved, but patient history update failed:',error);
-    }
-    sync('✅ Saved!');
-    printHTML(buildPrintRx(rx,qrDataUrl), false);
+    const saved=await persistRx();
+    if(!saved) return;
+    printHTML(buildPrintRx(saved.rx,saved.qrDataUrl),false);
     clearRx(); genRxId();
-    if(patientError) alert('✅ Prescription saved and printed, but patient history could not be updated: '+(patientError.message||patientError));
-  }catch(e){
-    console.error('saveRx error:',e);
-    const denied=e?.code==='permission-denied' || /insufficient permissions/i.test(e?.message||'');
+    if(saved.patientError) alert('✅ Prescription saved and printed, but patient history could not be updated: '+(saved.patientError.message||saved.patientError));
+  }catch(error){
+    console.error('saveRx error:',error);
+    const denied=error?.code==='permission-denied' || /insufficient permissions/i.test(error?.message||'');
     alert(denied
       ? '❌ Save failed: Firestore rejected this prescription. The prescription number is only stored if this write succeeds. Check that you are signed in as a doctor or admin, then try again.'
-      : '❌ Save failed: '+e.message);
+      : '❌ Save failed: '+error.message);
   }finally{ btn.innerHTML='💾 Save & Print'; btn.disabled=false; }
 };
 
@@ -343,7 +349,14 @@ async function makeQrDataUrl(rx){
 
 window.previewRx=async function(){
   try{
-    printHTML(buildPrintRx(getRxData(),'',true),true);
+    printHTML(buildPrintRx(getRxData(),'',true),true,async()=>{
+      const saved=await persistRx();
+      if(!saved) return false;
+      const printContent=document.querySelector('#pa .rxp');
+      if(printContent) printContent.outerHTML=buildPrintRx(saved.rx,saved.qrDataUrl);
+      if(saved.patientError) alert('✅ Prescription saved, but patient history could not be updated: '+(saved.patientError.message||saved.patientError));
+      return true;
+    });
   }catch(error){
     console.error('Prescription preview failed:',error);
     alert('❌ Preview failed: '+error.message);
